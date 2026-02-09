@@ -28,37 +28,37 @@ Status key: `[ ]` = not started, `[~]` = in progress, `[x]` = done
 > Goal: Working monorepo with both apps running locally. Deployable to Vercel and Railway.
 
 ### Monorepo Setup
-- [ ] Initialize Turborepo with pnpm workspaces
-- [ ] Configure root `package.json`, `turbo.json`, `pnpm-workspace.yaml`
-- [ ] Configure shared TypeScript config
+- [x] Initialize Turborepo with pnpm workspaces
+- [x] Configure root `package.json`, `turbo.json`, `pnpm-workspace.yaml`
+- [x] Configure shared TypeScript config
 
 ### Web App (Next.js)
-- [ ] Scaffold Next.js 15 app in `apps/web`
-- [ ] Configure Tailwind CSS
-- [ ] Create root layout with site header and navigation
-- [ ] Create placeholder pages: Home, About, Archive, Links
-- [ ] Configure path aliases (`@/`)
+- [x] Scaffold Next.js 15 app in `apps/web`
+- [x] Configure Tailwind CSS
+- [x] Create root layout with site header and navigation
+- [x] Create placeholder pages: Home, About, Archive, Links
+- [x] Configure path aliases (`@/`)
 
 ### CMS App (Payload)
-- [ ] Scaffold Payload CMS 3.x in `apps/cms`
-- [ ] Define `comic-pages` collection
-- [ ] Define `media` collection with R2 storage adapter
-- [ ] Define globals: `site-settings`, `about-page`, `links-page`
-- [ ] Configure PostgreSQL connection
+- [x] Scaffold Payload CMS 3.x in `apps/cms`
+- [x] Define `comic-pages` collection
+- [x] Define `media` collection with R2 storage adapter
+- [x] Define globals: `site-settings`, `about-page`, `links-page`
+- [x] Configure PostgreSQL connection
 
 ### Shared Package
-- [ ] Create `packages/shared` with TypeScript types
-- [ ] Define content types matching CMS schemas
+- [x] Create `packages/shared` with TypeScript types
+- [x] Define content types matching CMS schemas
 
 ### Infrastructure
-- [ ] Create `.env.example` files for both apps
+- [x] Create `.env.example` files for both apps
 - [ ] Configure Vercel project for `apps/web` (manual: dashboard)
 - [ ] Configure Railway project for `apps/cms` (manual: dashboard)
 - [ ] Set up Cloudflare R2 bucket (manual: dashboard)
-- [ ] Configure DNS for `running.red` and `cms.running.red` (manual: Namecheap)
+- [ ] Configure DNS for `running.red` and `admin.running.red` (manual: Namecheap)
 
 ### Documentation Checkpoint
-- [ ] Update all docs to reflect any changes from implementation
+- [x] Update all docs to reflect any changes from implementation
 
 ---
 
