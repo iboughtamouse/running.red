@@ -1,4 +1,5 @@
 import type { RichText } from './rich-text';
+import type { MediaItem } from './comic';
 
 /**
  * Site-wide settings managed via CMS global.
@@ -6,11 +7,7 @@ import type { RichText } from './rich-text';
 export interface SiteSettings {
   siteTitle: string;
   siteDescription: string;
-  socialImage?: {
-    url: string;
-    width: number;
-    height: number;
-  };
+  socialImage?: string | MediaItem;
 }
 
 /**
