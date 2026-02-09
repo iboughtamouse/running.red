@@ -1,12 +1,12 @@
 {
-  "name": "apps-cms",
-  "version": "1.0.0",
-  "description": "A blank template to get started with Payload 3.0",
+  "name": "cms",
+  "version": "0.1.0",
+  "description": "Running Red CMS — Payload 3.x admin for managing webcomic content",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
-    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev --port 3001",
     "devsafe": "rm -rf .next && cross-env NODE_OPTIONS=--no-deprecation next dev",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "generate:types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
@@ -29,7 +29,9 @@
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "sharp": "0.34.2",
-    "@payloadcms/db-postgres": "3.75.0"
+    "@payloadcms/db-postgres": "3.75.0",
+    "@payloadcms/storage-s3": "3.75.0",
+    "@running-red/shared": "workspace:*"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
@@ -38,6 +40,7 @@
     "@types/react": "19.2.9",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "4.5.2",
+    "@eslint/eslintrc": "^3.2.0",
     "eslint": "^9.16.0",
     "eslint-config-next": "15.4.11",
     "jsdom": "28.0.0",
@@ -53,11 +56,5 @@
     "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "esbuild",
-      "unrs-resolver"
-    ]
-  }
+  "pnpm": {}
 }
