@@ -3,6 +3,10 @@ import type { GlobalConfig } from 'payload';
 export const AboutPage: GlobalConfig = {
   slug: 'about-page',
   label: 'About Page',
+  access: {
+    read: () => true,
+    update: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       name: 'aboutMe',

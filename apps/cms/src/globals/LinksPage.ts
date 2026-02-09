@@ -3,6 +3,10 @@ import type { GlobalConfig } from 'payload';
 export const LinksPage: GlobalConfig = {
   slug: 'links-page',
   label: 'Links Page',
+  access: {
+    read: () => true,
+    update: ({ req }) => Boolean(req.user),
+  },
   fields: [
     {
       name: 'links',

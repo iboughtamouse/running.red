@@ -1,3 +1,5 @@
+export type { RichText } from './types/rich-text';
+
 export type {
   ComicPage,
   ComicPageStatus,

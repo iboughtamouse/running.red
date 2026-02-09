@@ -1,3 +1,5 @@
+import type { RichText } from './rich-text';
+
 /**
  * Site-wide settings managed via CMS global.
  */
@@ -15,9 +17,9 @@ export interface SiteSettings {
  * About page content managed via CMS global.
  */
 export interface AboutPage {
-  aboutMe: unknown; // Rich text — shape depends on Payload's serialization
-  aboutComic: unknown;
-  contentWarnings: unknown;
+  aboutMe: RichText;
+  aboutComic: RichText;
+  contentWarnings: RichText;
   updateSchedule: string;
 }
 

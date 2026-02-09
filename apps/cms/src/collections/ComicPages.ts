@@ -1,7 +1,21 @@
 import type { CollectionConfig } from 'payload';
 
+const isAuthenticated = ({ req }: { req: { user?: unknown } }): boolean =>
+  Boolean(req.user);
+
+const publishedOnly = (): { status: { equals: string }; publishDate: { less_than_equal: string } } => ({
+  status: { equals: 'published' },
+  publishDate: { less_than_equal: new Date().toISOString() },
+});
+
 export const ComicPages: CollectionConfig = {
   slug: 'comic-pages',
+  access: {
+    read: ({ req }) => (req.user ? true : publishedOnly()),
+    create: isAuthenticated,
+    update: isAuthenticated,
+    delete: isAuthenticated,
+  },
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['pageNumber', 'title', 'status', 'publishDate'],

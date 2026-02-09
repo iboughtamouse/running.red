@@ -1,3 +1,5 @@
+import type { RichText } from './rich-text';
+
 /**
  * Comic page status values.
  */
@@ -11,14 +13,18 @@ export type ComicPageStatus =
 
 /**
  * A comic page as returned by the CMS API.
+ *
+ * Note on `image`: Payload returns a string (ID) at depth=0,
+ * or a full MediaItem object at depth>=1. The API client should
+ * always request depth>=1 so consumers get the full object.
  */
 export interface ComicPage {
   id: string;
   title?: string;
   slug: string;
   pageNumber: number;
-  image: MediaItem;
-  commentary?: string;
+  image: string | MediaItem;
+  commentary?: RichText | null;
   contentWarning: boolean;
   contentWarningText?: string;
   publishDate: string;

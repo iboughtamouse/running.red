@@ -57,5 +57,6 @@ export default buildConfig({
         ]
       : []),
   ],
-  sharp,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- sharp version mismatch with Payload's expected types
+  sharp: sharp as any,
 });
