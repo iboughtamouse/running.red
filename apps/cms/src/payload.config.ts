@@ -1,20 +1,20 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { buildConfig } from 'payload';
-import { postgresAdapter } from '@payloadcms/db-postgres';
-import { lexicalEditor } from '@payloadcms/richtext-lexical';
-import { s3Storage } from '@payloadcms/storage-s3';
-import sharp from 'sharp';
+import path from 'path'
+import { fileURLToPath } from 'url'
+import { buildConfig } from 'payload'
+import { postgresAdapter } from '@payloadcms/db-postgres'
+import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
+import sharp from 'sharp'
 
-import { ComicPages } from './collections/ComicPages';
-import { Media } from './collections/Media';
-import { Users } from './collections/Users';
-import { SiteSettings } from './globals/SiteSettings';
-import { AboutPage } from './globals/AboutPage';
-import { LinksPage } from './globals/LinksPage';
+import { ComicPages } from './collections/ComicPages.js'
+import { Media } from './collections/Media.js'
+import { Users } from './collections/Users.js'
+import { SiteSettings } from './globals/SiteSettings.js'
+import { AboutPage } from './globals/AboutPage.js'
+import { LinksPage } from './globals/LinksPage.js'
 
-const filename = fileURLToPath(import.meta.url);
-const dirname = path.dirname(filename);
+const filename = fileURLToPath(import.meta.url)
+const dirname = path.dirname(filename)
 
 export default buildConfig({
   admin: {
@@ -29,7 +29,7 @@ export default buildConfig({
   collections: [ComicPages, Media, Users],
   globals: [SiteSettings, AboutPage, LinksPage],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || 'CHANGE_ME_IN_PRODUCTION',
+  secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -60,6 +60,5 @@ export default buildConfig({
         ]
       : []),
   ],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- sharp version mismatch with Payload's expected types
-  sharp: sharp as any,
-});
+  sharp,
+})
