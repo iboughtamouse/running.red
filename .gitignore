@@ -24,6 +24,8 @@ Thumbs.db
 
 # Payload
 media/
+**/importMap.js
+**/payload-types.ts
 
 # Misc
 *.log
