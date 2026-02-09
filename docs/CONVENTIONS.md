@@ -89,8 +89,16 @@ apps/web/
 ### Branches
 
 - `main` — production, always deployable
+- `develop` — integration/staging branch, all PRs target this
 - `claude/*` — AI-driven development branches
-- Feature branches merge into `main` via PR
+- Feature branches merge into `develop` via PR
+- `develop` merges into `main` only after staging validation
+
+### Merge Rules
+
+- **Never push directly to `main` or `develop`.** All changes go through PRs.
+- PRs always target `develop` unless explicitly told otherwise.
+- `develop` → `main` merges require explicit owner approval.
 
 ### Commits
 

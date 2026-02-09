@@ -69,19 +69,20 @@ running.red/
 
 ### Environments
 
-| Environment | Branch   | Web URL                        | CMS URL                        |
-|-------------|----------|--------------------------------|--------------------------------|
-| Production  | `main`   | `running.red`                  | `cms.running.red`              |
-| Preview     | PR branches | `*.vercel.app` (auto)       | — (CMS has single instance)    |
+| Environment | Branch     | Web URL                        | CMS URL                        |
+|-------------|------------|--------------------------------|--------------------------------|
+| Production  | `main`     | `running.red`                  | `admin.running.red`            |
+| Staging     | `develop`  | Vercel preview for `develop`   | Single CMS instance (shared)   |
+| Preview     | PR branches | `*.vercel.app` (auto)         | —                              |
 
-- **Vercel** auto-deploys the `web` app on every push. PRs get preview URLs.
+- **Vercel** auto-deploys the `web` app. PRs and `develop` get preview URLs. `main` deploys to production.
 - **Railway** hosts the CMS and PostgreSQL. Deploys from `main`.
-- There is no formal staging environment. Vercel preview deployments serve that purpose for the frontend.
+- The `develop` branch serves as the integration/staging branch. All PRs target `develop`. Once tested, `develop` is merged into `main` for production release.
 
 ### DNS (Namecheap)
 
 - `running.red` — A/CNAME to Vercel
-- `cms.running.red` — CNAME to Railway
+- `admin.running.red` — CNAME to Railway
 
 ### Environment Variables
 

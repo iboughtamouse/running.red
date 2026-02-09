@@ -77,4 +77,5 @@ Reader → Next.js (Vercel) → Payload API (Railway) → PostgreSQL (Railway)
 - The comic updates on Mondays.
 - Content warnings are a first-class feature — some pages are blurred until the reader confirms.
 - Image pipeline: upload PNG → Sharp generates WebP variants + blur placeholder → stored in R2.
-- No formal staging environment. Vercel preview deployments serve that purpose.
+- `develop` branch is the integration/staging branch. All PRs target `develop`. `main` is production.
+- Never push directly to `main` or `develop` — always use PRs.

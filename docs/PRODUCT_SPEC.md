@@ -9,7 +9,7 @@ Running Red is a webcomic by Ren, telling the story of Alexandrus — a characte
 The product has two interfaces:
 
 1. **Reader-facing website** at `running.red` — browse and read the comic
-2. **Author admin UI** at `cms.running.red` — Ren uploads pages and manages content
+2. **Author admin UI** at `admin.running.red` — Ren uploads pages and manages content
 
 ## Users
 
