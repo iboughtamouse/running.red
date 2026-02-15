@@ -75,19 +75,19 @@ This document outlines the phased implementation plan for Running Red. The appro
   - Function to generate blur placeholder (base64)
 - [x] Test locally (upload PNG, get WebP variants + blur hash)
 
-### 1.5 API Routes
+### 1.5 API Routes ✅
 
-- [ ] Create `/api/admin/comics` route:
+- [x] Create `/api/admin/comics` route:
   - `GET` - List all comics (including drafts)
   - `POST` - Create new comic page (upload image, process, save to DB)
-- [ ] Create `/api/admin/comics/[id]` route:
+- [x] Create `/api/admin/comics/[id]` route:
   - `GET` - Fetch single comic page
   - `PUT` - Update comic page (with optional image replacement)
   - `DELETE` - Delete comic page
-- [ ] Create `/api/admin/about` route (GET/PUT for about page singleton)
-- [ ] Create `/api/admin/links` route (GET/PUT for links array)
-- [ ] Create `/api/admin/settings` route (GET/PUT for site settings)
-- [ ] Create `/api/comics` route (GET - public, published pages only)
+- [x] Create `/api/admin/about` route (GET/PUT for about page singleton)
+- [x] Create `/api/admin/links` route (GET/PUT for links array)
+- [x] Create `/api/admin/settings` route (GET/PUT for site settings)
+- [x] Create `/api/comics` route (GET - public, published pages only)
 
 ### 1.6 Testing (No UI Yet)
 
@@ -449,7 +449,7 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.4 done) |
+| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.5 done) |
 | Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |
