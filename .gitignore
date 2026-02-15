@@ -3,9 +3,9 @@ node_modules/
 
 # Build outputs
 .next/
+out/
 dist/
 build/
-.turbo/
 
 # Environment variables
 .env
@@ -22,9 +22,14 @@ Thumbs.db
 *.swp
 *.swo
 
-# Payload
-media/
+# Testing
+coverage/
+.nyc_output/
 
 # Misc
 *.log
 *.tsbuildinfo
+.eslintcache
+
+# Vercel
+.vercel
