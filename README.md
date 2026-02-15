@@ -2,54 +2,102 @@
 
 A webcomic platform by Ren.
 
-## Structure
+**Status:** 🚧 In development (Phase 0: Documentation complete)
 
-| Directory | App | Description |
-|-----------|-----|-------------|
-| `apps/web` | Reader site | Next.js 15, Tailwind CSS — deployed on Vercel |
-| `apps/cms` | Admin panel | Payload CMS 3.x — deployed on Railway |
-| `packages/shared` | Shared types | TypeScript types used by both apps |
+---
 
-## Getting Started
+## 📚 Documentation
+
+All project documentation lives in the [`docs/`](docs/) directory.
+
+**Start here:**
+- **[docs/README.md](docs/README.md)** — Documentation index and navigation guide
+- **[docs/OVERVIEW.md](docs/OVERVIEW.md)** — What is Running Red? High-level goals and context.
+
+**Quick Links:**
+- [Architecture](docs/ARCHITECTURE.md) — Technical design
+- [Product Requirements](docs/PRODUCT.md) — Features and user needs
+- [Content Model](docs/CONTENT_MODEL.md) — Database schema
+- [Implementation Plan](docs/IMPLEMENTATION.md) — Roadmap and phases
+
+---
+
+## 🛠️ Development
+
+*(Will be updated when Phase 1 begins)*
+
+### Prerequisites
+
+- Node.js 22+ (see `.nvmrc` when added)
+- npm (package manager)
+- PostgreSQL database (Vercel Postgres, Railway, or Supabase)
+- Cloudflare R2 bucket (for image storage)
+
+### Setup
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
 
-# Copy environment files
-cp apps/web/.env.example apps/web/.env.local
-cp apps/cms/.env.example apps/cms/.env.local
+# Copy environment variables
+cp .env.example .env.local
+# Edit .env.local with your credentials
 
-# Run both apps in dev mode
-pnpm dev
-
-# Or run individually
-pnpm --filter web dev    # http://localhost:3000
-pnpm --filter cms dev    # http://localhost:3001
+# Run development server
+npm run dev
 ```
 
-The CMS requires a PostgreSQL database. Set `DATABASE_URL` in `apps/cms/.env.local`.
-
-## Commands
+### Commands
 
 | Command | Description |
 |---------|-------------|
-| `pnpm dev` | Start all apps in development mode |
-| `pnpm build` | Build all apps |
-| `pnpm typecheck` | Run TypeScript type checking |
-| `pnpm lint` | Run ESLint |
-| `pnpm test` | Run tests |
+| `npm run dev` | Start development server |
+| `npm run build` | Build for production |
+| `npm run start` | Start production server |
+| `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run TypeScript type checking |
 
-## Branching
+---
 
-- `main` — production (`running.red`)
-- `develop` — staging / integration
-- Feature branches → PR into `develop`
-- `develop` → `main` for production releases
+## 🌐 Deployment
 
-## Documentation
+*(Will be updated when deployment is configured)*
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Product Spec](docs/PRODUCT_SPEC.md)
-- [Conventions](docs/CONVENTIONS.md)
-- [Tasks](docs/TASKS.md)
+- **Production:** `running.red` (Vercel)
+- **Preview:** Automatic preview URLs for PRs
+
+---
+
+## 📂 Project Structure
+
+```
+running-red/
+  docs/                 # Documentation (start here!)
+  src/                  # Source code (Phase 1+)
+    app/                # Next.js App Router
+    components/         # React components
+    lib/                # Utilities, database, R2 client
+  public/               # Static assets
+  README.md             # This file
+  package.json          # Dependencies and scripts
+```
+
+---
+
+## 🤝 Contributing
+
+This is a personal project for Ren's webcomic. Not open for external contributions at this time.
+
+---
+
+## 📄 License
+
+All rights reserved. The code and content of this project are not open source.
+
+---
+
+## 🔗 Links
+
+- **Live Site:** (Coming soon)
+- **Admin Panel:** (Coming soon)
+- **Documentation:** [docs/README.md](docs/README.md)
