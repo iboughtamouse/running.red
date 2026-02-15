@@ -67,13 +67,13 @@ This document outlines the phased implementation plan for Running Red. The appro
 - [x] Create `lib/r2.ts` (R2 upload/download utilities)
 - [x] Test upload/download manually (via Node script or API route)
 
-### 1.4 Image Processing
+### 1.4 Image Processing ✅
 
-- [ ] Install Sharp (`npm install sharp`)
-- [ ] Create `lib/image.ts`:
+- [x] Install Sharp (`npm install sharp`)
+- [x] Create `lib/image.ts`:
   - Function to resize/convert to WebP (desktop: 1200px, mobile: 800px)
   - Function to generate blur placeholder (base64)
-- [ ] Test locally (upload PNG, get WebP variants + blur hash)
+- [x] Test locally (upload PNG, get WebP variants + blur hash)
 
 ### 1.5 API Routes
 
@@ -449,7 +449,7 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.3 done) |
+| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.4 done) |
 | Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |
