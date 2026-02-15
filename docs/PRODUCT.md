@@ -349,7 +349,7 @@ Running Red is a webcomic reader and content management system for a single-auth
 **Behavior:**
 - On submit:
   - Validate inputs (page number unique, image file valid, etc.)
-  - Upload image to API route (`/api/admin/upload-image`)
+  - Submit FormData (image + metadata) to `/api/admin/comics` (POST)
   - API processes image (Sharp → WebP variants)
   - API uploads to R2
   - API inserts row into `comic_pages` table
@@ -360,23 +360,24 @@ Running Red is a webcomic reader and content management system for a single-auth
 
 ---
 
-### Edit Comic Page (`/admin/comics/{id}`)
+### Edit Comic Page (`/admin/comics/{slug}`)
 
 **Purpose:** Edit an existing comic page.
 
 **Content:**
 - Same form as "Add Comic Page", but pre-filled with existing data
-- "Replace Image" button (optional — allows uploading a new image)
+- "Replace Image" option (allows uploading a new image)
 - "Save Changes" button
 - "Cancel" button
 
 **Behavior:**
+- Server component fetches comic by slug, passes to client form component
 - On submit:
-  - Update row in `comic_pages` table
+  - Submit FormData to `/api/admin/comics/[id]` (PUT)
   - If image replaced: upload new image to R2, update URLs
   - Redirect to `/admin/comics` with success message
 
-**URL:** `/admin/comics/123` (where 123 is the page ID)
+**URL:** `/admin/comics/page-1` (slug-based, not database ID)
 
 ---
 

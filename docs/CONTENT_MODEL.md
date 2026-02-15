@@ -74,8 +74,8 @@ CREATE INDEX idx_comic_pages_page_number ON comic_pages(page_number);
 | `page_number` | Integer | Yes | Sequential page number (1, 2, 3...). Must be unique. Used for ordering and navigation. |
 | `slug` | Varchar(255) | Yes | URL-safe identifier (e.g., "page-1", "page-42"). Must be unique. Auto-generated from page_number. |
 | `title` | Varchar(255) | No | Optional title for the page (e.g., "The Reckoning"). Can be null. |
-| `image_url` | Varchar(500) | Yes | R2 URL for the desktop WebP image (e.g., "https://...r2.../images/page-42-desktop.webp") |
-| `image_mobile_url` | Varchar(500) | No | R2 URL for the mobile WebP image. Can be null (falls back to desktop). |
+| `image_url` | Varchar(500) | Yes | R2 key for the desktop WebP image (e.g., "images/page-42-desktop.webp"). Served via `/api/images/` proxy. |
+| `image_mobile_url` | Varchar(500) | No | R2 key for the mobile WebP image. Can be null (falls back to desktop). |
 | `image_blur_hash` | Text | No | Base64-encoded tiny placeholder image (for loading state). Can be null. |
 | `commentary` | Text | No | Author's notes displayed below the comic page. Markdown or plain text. Can be null. |
 | `content_warnings` | Text[] | No | Array of content warning types. Valid values: `'abuse'`, `'trauma'`, `'self-harm-suicide'`, `'eating-disorders'`, `'violence'`, `'death-dying'`, `'mental-illness'`. Empty array = no warnings. |
@@ -95,8 +95,8 @@ INSERT INTO comic_pages (
   42,
   'page-42',
   'The Reckoning',
-  'https://pub-abc123.r2.dev/images/page-42-desktop.webp',
-  'https://pub-abc123.r2.dev/images/page-42-mobile.webp',
+  'images/page-42-desktop.webp',
+  'images/page-42-mobile.webp',
   'data:image/webp;base64,UklGRi...',
   'This took forever to draw! Hope you like it.',
   ARRAY['violence', 'death-dying'],
@@ -456,12 +456,12 @@ Images are stored in Cloudflare R2, not in the database. The database only store
 ```
 running-red/
   originals/
-    page-1.png
-    page-2.png
-    page-42.png
+    page-1-1739654400000.png       # Timestamped (never overwritten)
+    page-1-1739740800000.png       # Re-upload creates new file
+    page-42-1739827200000.png
     social-default.png
   images/
-    page-1-desktop.webp
+    page-1-desktop.webp            # Overwritten on re-upload
     page-1-mobile.webp
     page-2-desktop.webp
     page-2-mobile.webp
@@ -471,19 +471,19 @@ running-red/
 ```
 
 **Naming Convention:**
-- Originals: `originals/{filename}.{ext}` (e.g., `originals/page-42.png`)
-- Desktop WebP: `images/{filename}-desktop.webp` (e.g., `images/page-42-desktop.webp`)
-- Mobile WebP: `images/{filename}-mobile.webp` (e.g., `images/page-42-mobile.webp`)
+- Originals: `originals/page-{N}-{timestamp}.{ext}` (timestamped, never overwritten — preserves history)
+- Desktop WebP: `images/page-{N}-desktop.webp` (overwritten on re-upload)
+- Mobile WebP: `images/page-{N}-mobile.webp` (overwritten on re-upload)
 
-**URL Format:**
+**Access:**
+
+Images are served via the `/api/images/[...key]` proxy route (R2 bucket is not publicly accessible):
+
 ```
-https://pub-{bucket-id}.r2.dev/{path}
+/api/images/images/page-42-desktop.webp
 ```
 
-Example:
-```
-https://pub-abc123.r2.dev/images/page-42-desktop.webp
-```
+The proxy streams the R2 object with `Cache-Control: public, max-age=31536000, immutable`. Admin edit pages append `?v={updatedAt}` for cache busting.
 
 ---
 
@@ -548,16 +548,11 @@ There are no foreign key relationships in this schema (no joins needed). Each ta
 
 ## Migrations
 
-Database schema changes should be managed with migrations. Use a tool like:
-- **Prisma Migrate** (if using Prisma ORM)
-- **node-pg-migrate** (if using raw SQL)
-- **Drizzle Kit** (if using Drizzle ORM)
+Database schema changes are managed with raw SQL migration files in `src/db/`.
 
-**Initial migration:**
-```sql
--- Create all tables (see schemas above)
--- Insert default rows for singletons
-```
+**Current files:**
+- `src/db/schema.sql` — Full schema (all tables, indexes, constraints)
+- `src/db/seed.sql` — Default data for singleton tables
 
 **Future migrations:**
 - Add/remove columns

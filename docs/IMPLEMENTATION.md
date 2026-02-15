@@ -107,51 +107,54 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 2: Admin Interface
+## Phase 2: Admin Interface 🔄
 
 > **Goal:** Ren can upload comic pages and edit content via admin UI. Test locally (no deployment yet).
 
-### 2.1 Authentication
+### 2.1 Authentication ✅
 
-- [ ] Create `lib/auth.ts` (simple password auth - email/password in env vars)
-- [ ] Create `/admin/login` page (login form)
-- [ ] Create `middleware.ts` (protect `/admin/*` routes, redirect to login if not authenticated)
-- [ ] Store session in HTTP-only cookie
-- [ ] Test: can't access `/admin` without logging in
+- [x] Create `lib/auth.ts` (HMAC-signed session tokens — email/password checked against env vars)
+- [x] Create `/admin/login` page (login form)
+- [x] Create `proxy.ts` (protect `/admin/*` routes, redirect to login if not authenticated)
+- [x] Store session in HTTP-only cookie
+- [x] Test: can't access `/admin` without logging in
 
-### 2.2 Admin Layout
+### 2.2 Admin Layout ✅
 
-- [ ] Create `/admin/layout.tsx`:
+- [x] Create `/admin/layout.tsx`:
   - Check authentication
   - Simple header with "Running Red Admin" + logout button
   - Navigation: Dashboard, Comics, About, Links, Settings
-- [ ] Create `/admin/page.tsx` (dashboard with stats and quick actions)
+- [x] Create `/admin/page.tsx` (dashboard with stats and quick actions)
 
-### 2.3 Comic Pages Management
+### 2.3 Comic Pages Management ✅
 
-- [ ] Create `/admin/comics/page.tsx`:
+- [x] Create `/admin/comics/page.tsx`:
   - Table listing all comics (page #, title, status, publish date, actions)
   - "Add New Page" button
-- [ ] Create `/admin/comics/new/page.tsx`:
+- [x] Create `/admin/comics/new/page.tsx`:
   - Form with all fields (see [PRODUCT.md](PRODUCT.md#add-comic-page-admincomicsnew))
-  - Image upload component
+  - Inline file input for image upload (FormData submission)
   - Content warnings checkboxes (multiselect)
   - On submit: POST to `/api/admin/comics`
   - Redirect to `/admin/comics` on success
-- [ ] Create `/admin/comics/[id]/page.tsx`:
-  - Same form, pre-filled with existing data
+- [x] Create `/admin/comics/[slug]/page.tsx`:
+  - Server component fetches comic by slug, passes to client form
   - "Replace Image" option
   - On submit: PUT to `/api/admin/comics/[id]`
 
-### 2.4 Static Content Management
+### 2.4 Static Content Management ✅
 
-- [ ] Create `/admin/about/page.tsx`:
+- [x] Create `/admin/about/page.tsx`:
+  - Server component fetches data, passes to `AboutForm` client component
   - Form with 4 markdown textareas (About Me, About Comic, Content Warnings, Update Schedule)
   - On submit: PUT to `/api/admin/about`
-- [ ] Create `/admin/links/page.tsx`:
+- [x] Create `/admin/links/page.tsx`:
+  - Server component fetches data, passes to `LinksForm` client component
   - Editable list of links (add/remove/reorder)
   - On submit: PUT to `/api/admin/links`
-- [ ] Create `/admin/settings/page.tsx`:
+- [x] Create `/admin/settings/page.tsx`:
+  - Server component fetches data, passes to `SettingsForm` client component
   - Form for site title, description, social image upload
   - On submit: PUT to `/api/admin/settings`
 
@@ -445,7 +448,7 @@ Deferred to post-launch:
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
 | Phase 1: Database & API | 2-3 days | ✅ Done |
-| Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
+| Phase 2: Admin Interface | 3-4 days | 🔄 In progress |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |
 | Phase 5: Deployment | 1-2 days | 🔲 Not started |

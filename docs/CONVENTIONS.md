@@ -84,7 +84,7 @@ function renderPage(options?: { showTitle: boolean }) {
 
 | Type | Casing | Example |
 |---|---|---|
-| React components | PascalCase | `ComicPage.tsx`, `NavButton.tsx` |
+| React components | kebab-case | `edit-comic-form.tsx`, `about-form.tsx` |
 | Utilities, hooks, libs | camelCase | `formatDate.ts`, `useKeyboardNav.ts`, `db.ts` |
 | Next.js App Router files | lowercase (required by Next.js) | `page.tsx`, `layout.tsx`, `error.tsx` |
 | Config files | standard names | `tsconfig.json`, `package.json`, `.env.local` |
@@ -100,61 +100,65 @@ running-red/
     favicon.ico
     robots.txt
   src/                          # Source code
+    proxy.ts                    # Auth proxy (protects /admin/* routes)
     app/                        # Next.js App Router
-      (public)/                 # Public routes (grouped for organization)
-        page.tsx                # Home page
-        comic/
-          [slug]/
-            page.tsx            # Comic page
-        about/
-          page.tsx              # About page
-        archive/
-          page.tsx              # Archive page
-        links/
-          page.tsx              # Links page
-        rss.xml/
-          route.ts              # RSS feed
-      admin/                    # Admin routes (protected)
-        layout.tsx              # Admin layout with auth wrapper
+      layout.tsx                # Root layout
+      page.tsx                  # Home page (will move to (public)/ in Phase 3)
+      globals.css               # Global styles + Tailwind
+      admin/                    # Admin routes (protected by proxy.ts)
+        layout.tsx              # Admin layout (nav, header, logout)
         page.tsx                # Admin dashboard
+        loading.tsx             # Loading indicator for admin navigation
+        login/
+          page.tsx              # Login form
         comics/
           page.tsx              # List comics
           new/
             page.tsx            # Add new comic
-          [id]/
-            page.tsx            # Edit comic
+          [slug]/
+            page.tsx            # Edit comic (server component → EditComicForm)
         about/
-          page.tsx              # Edit About page
+          page.tsx              # Edit About page (server component → AboutForm)
         links/
-          page.tsx              # Edit Links page
+          page.tsx              # Edit Links page (server component → LinksForm)
         settings/
-          page.tsx              # Edit site settings
+          page.tsx              # Edit Site Settings (server component → SettingsForm)
       api/                      # API routes
         admin/
-          upload-image/
-            route.ts            # Image upload endpoint
-        revalidate/
-          route.ts              # Trigger ISR revalidation
-      layout.tsx                # Root layout
-      globals.css               # Global styles
+          auth/
+            route.ts            # Login/logout endpoints
+          comics/
+            route.ts            # POST create comic (with FormData image)
+            [id]/
+              route.ts          # PUT update / DELETE comic
+          about/
+            route.ts            # GET/PUT about page
+          links/
+            route.ts            # GET/PUT links page
+          settings/
+            route.ts            # GET/PUT site settings
+        comics/
+          route.ts              # GET public comics (published only)
+        images/
+          [...key]/
+            route.ts            # R2 image proxy (streams images to browser)
     components/                 # React components
-      admin/                    # Admin-specific components
-        ComicForm.tsx
-        ImageUpload.tsx
-      public/                   # Public-facing components
-        ComicImage.tsx
-        NavBar.tsx
-        ContentWarning.tsx
-      ui/                       # Generic UI components
-        Button.tsx
-        Input.tsx
+      admin/                    # Admin-specific client components
+        about-form.tsx          # About page form
+        edit-comic-form.tsx     # Comic edit form
+        links-form.tsx          # Links page form
+        settings-form.tsx       # Settings page form
+      public/                   # Public-facing components (Phase 3)
+      ui/                       # Generic UI components (Phase 4)
+    db/                         # Database files
+      schema.sql                # Full schema migration
+      seed.sql                  # Default data seed
     lib/                        # Utilities, helpers, clients
-      db.ts                     # Database client
-      r2.ts                     # R2 upload utilities
+      auth.ts                   # HMAC session auth utilities
+      db.ts                     # PostgreSQL client (pg Pool)
       image.ts                  # Sharp image processing
-      auth.ts                   # Auth utilities
+      r2.ts                     # R2 upload/download utilities
       types.ts                  # TypeScript types
-      utils.ts                  # Generic utilities
   .env.local                    # Environment variables (not committed)
   .env.example                  # Example env file (committed)
   .gitignore

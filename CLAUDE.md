@@ -40,7 +40,7 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 
 **Phase 1: Database & API Layer** ✅ Complete
 
-**Phase 2: Admin Interface** 🔲 Not started (next up)
+**Phase 2: Admin Interface** 🔄 Nearly complete (testing & polish remaining)
 
 See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 
