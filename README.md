@@ -30,7 +30,7 @@ All project documentation lives in the [`docs/`](docs/) directory.
 
 - Node.js 22+ (see `.nvmrc` when added)
 - npm (package manager)
-- PostgreSQL database (Vercel Postgres, Railway, or Supabase)
+- PostgreSQL database (Railway)
 - Cloudflare R2 bucket (for image storage)
 
 ### Setup

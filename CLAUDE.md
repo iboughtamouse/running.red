@@ -38,7 +38,7 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 
 **Phase 0: Documentation** ✅ Complete
 
-**Phase 1: Foundation** 🔲 Not started (next up)
+**Phase 1: Database & API Layer** 🔲 Not started (next up)
 
 See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 
@@ -50,7 +50,7 @@ See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 |------------|---------|
 | **Next.js 15** | Single app (public + admin routes) |
 | **TypeScript** | Strict mode, no `any` types |
-| **PostgreSQL** | Content metadata (Vercel Postgres, Railway, or Supabase) |
+| **PostgreSQL** | Content metadata (Railway) |
 | **Cloudflare R2** | Image storage (zero egress fees) |
 | **Tailwind CSS** | Styling (mobile-first) |
 | **npm** | Package manager (not pnpm) |
