@@ -137,7 +137,7 @@ The scale doesn't justify separation:
 
 ### Decision
 
-Use **PostgreSQL** (Vercel Postgres, Railway, or Supabase) for content metadata storage.
+Use **PostgreSQL** (Railway) for content metadata storage.
 
 ### Context
 
@@ -157,7 +157,7 @@ We need to store metadata for comic pages, about page, links, site settings. Opt
 ### Rationale
 
 **PostgreSQL wins because:**
-1. **Free tiers are generous** — Vercel Postgres (256MB free), Railway (500MB free), Supabase (500MB free)
+1. **Free tier is generous** — Railway (500MB free, then $5/month)
 2. **Reliable and well-understood** — Battle-tested, won't break
 3. **Good for structured data** — Comic pages have a clear schema
 4. **JSONB support** — Flexible for fields like links array (don't need separate table)
@@ -180,7 +180,7 @@ We need to store metadata for comic pages, about page, links, site settings. Opt
 
 **Negative:**
 - Requires a database service (but free tier covers us)
-- One more thing to manage (but Vercel Postgres integrates seamlessly)
+- One more thing to manage (but Railway is straightforward)
 
 ---
 

@@ -82,14 +82,13 @@ This document describes every technology used in the project and explains **why*
 
 **Why we chose it:**
 1. **Reliable** — Battle-tested, widely used
-2. **Free tiers available** — Vercel Postgres (256MB free), Railway (500MB free), Supabase (500MB free)
+2. **Free tier** — Railway (500MB free, then $5/month)
 3. **Good for structured data** — Comic pages have a clear schema
 4. **JSONB** — Flexible for fields like links array (don't need a separate table)
 
 **Alternatives considered:**
 - **SQLite** — File-based, but Vercel doesn't support persistent storage
 - **MongoDB** — NoSQL, but our data is very structured (relational is better)
-- **Supabase** — PostgreSQL with real-time features, but we don't need real-time
 - **Git-based (JSON files)** — Simple, but Ren's edits = Git commits (weird UX)
 
 **Verdict:** PostgreSQL is the least weird, most reliable choice.
@@ -221,7 +220,7 @@ This document describes every technology used in the project and explains **why*
 | Service | Purpose | Cost | Why This? |
 |---------|---------|------|-----------|
 | **Vercel** | Host Next.js app | Free (hobby tier) | Zero-config Next.js deployment, generous free tier |
-| **Vercel Postgres** (or Railway/Supabase) | Host database | Free tier | Easy integration with Vercel, or Railway/Supabase if needed |
+| **Railway** | Host database | Free tier | Simple PostgreSQL hosting, 500MB free then $5/month |
 | **Cloudflare** | Host images (R2) | Free tier (10GB) | Zero egress fees, built-in CDN |
 | **Namecheap** | Domain registrar | ~$10/year | User already owns domain |
 
@@ -234,7 +233,7 @@ This document describes every technology used in the project and explains **why*
 2. **Free tier is generous** — Unlimited bandwidth, 100GB storage
 3. **Preview deployments** — Every PR gets a preview URL
 4. **Edge network** — Fast globally
-5. **Vercel Postgres** — If we use it, integrates seamlessly
+5. **Railway** — Simple PostgreSQL hosting
 
 **Alternatives:**
 - **Netlify** — Similar to Vercel, but less Next.js-specific
@@ -247,12 +246,7 @@ This document describes every technology used in the project and explains **why*
 
 ### Database Hosting
 
-**Options:**
-1. **Vercel Postgres** — Free tier (256MB, 60 hours compute/month)
-2. **Railway Postgres** — Free tier (500MB), then $5/month
-3. **Supabase** — Free tier (500MB), generous limits
-
-**Likely choice:** Vercel Postgres (if using Vercel) for simplicity, or Railway if we need more storage.
+**Choice:** Railway — Free tier (500MB), then $5/month
 
 ---
 

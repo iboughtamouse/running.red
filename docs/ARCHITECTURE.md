@@ -12,6 +12,7 @@ Running Red is a **single Next.js application** with two sections:
 2. **Admin routes** (`/admin/*`) — Protected interface where Ren manages content
 
 Both sections share:
+
 - The same codebase
 - The same database (PostgreSQL)
 - The same image storage (Cloudflare R2)
@@ -25,8 +26,8 @@ This is intentionally simple. One app, one deployment, one database.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       Next.js App (Vercel)                   │
-│                                                              │
+│                       Next.js App (Vercel)                  │
+│                                                             │
 │  ┌────────────────────┐       ┌──────────────────────────┐  │
 │  │  Public Routes     │       │  Admin Routes            │  │
 │  │  /                 │       │  /admin (protected)      │  │
@@ -44,13 +45,12 @@ This is intentionally simple. One app, one deployment, one database.
 │            │  Database Layer          │                     │
 │            │  (Postgres client)       │                     │
 │            └──────────┬───────────────┘                     │
-└───────────────────────┼──────────────────────────────────────┘
+└───────────────────────┼─────────────────────────────────────┘
                         │
                         ▼
          ┌──────────────────────────┐
          │  PostgreSQL Database     │
-         │  (Vercel Postgres or     │
-         │   Railway/Supabase)      │
+         │      (Railway)           │
          │                          │
          │  Tables:                 │
          │  - comic_pages           │
@@ -80,6 +80,7 @@ This is intentionally simple. One app, one deployment, one database.
 **Technology:** Next.js 15 with App Router
 
 **Key Features:**
+
 - **Public routes** use React Server Components (no client JS unless needed)
 - **Admin routes** are protected with NextAuth (or simple password auth)
 - **ISR (Incremental Static Regeneration)** for comic pages — static, but revalidates
@@ -88,6 +89,7 @@ This is intentionally simple. One app, one deployment, one database.
 **Deployment:** Vercel (or similar JAMstack host)
 
 **Why Next.js?**
+
 - Built-in SSG/ISR (perfect for comic pages that are static but update weekly)
 - App Router with Server Components minimizes client JS (better performance)
 - Image optimization built-in
@@ -95,6 +97,7 @@ This is intentionally simple. One app, one deployment, one database.
 - File-based routing is intuitive
 
 **Why not separate apps?**
+
 - One deployment is simpler than two
 - Shared code (components, utilities, types)
 - No CORS issues
@@ -106,10 +109,7 @@ This is intentionally simple. One app, one deployment, one database.
 
 **Purpose:** Store all content metadata (not images).
 
-**Options:**
-- **Vercel Postgres** (preferred if using Vercel) — Free tier: 256MB, 60 hours compute/month
-- **Railway Postgres** — Free tier: 500MB, then $5/month
-- **Supabase** — Free tier: 500MB, generous limits
+**Choice:** Railway — Free tier: 500MB, then $5/month
 
 **Schema (simplified):**
 
@@ -124,8 +124,8 @@ CREATE TABLE comic_pages (
   image_mobile_url VARCHAR(500),           -- R2 URL for mobile WebP
   image_blur_hash TEXT,                    -- Base64 blur placeholder
   commentary TEXT,                         -- Markdown or plain text
-  content_warning BOOLEAN DEFAULT FALSE,
-  content_warning_text VARCHAR(255),
+  content_warnings TEXT[] DEFAULT '{}',    -- Array of warning types
+  content_warning_other TEXT,              -- Free text for "Other"
   publish_date DATE NOT NULL,
   status VARCHAR(20) DEFAULT 'draft',      -- 'draft' or 'published'
   created_at TIMESTAMP DEFAULT NOW(),
@@ -156,17 +156,22 @@ CREATE TABLE site_settings (
 );
 ```
 
+**Note:** Full schema details in [CONTENT_MODEL.md](CONTENT_MODEL.md)
+
 **Why PostgreSQL?**
+
 - Reliable, well-understood
 - Generous free tiers available
 - Good for structured data (comic pages, settings)
 - JSONB support for flexible fields (links array)
 
 **Why not SQLite?**
+
 - Vercel doesn't support persistent volumes (no place to store the .db file)
 - Could use SQLite locally + sync to Git, but that's weird UX for Ren's edits
 
 **Why not Git-based (JSON/Markdown files)?**
+
 - Ren's edits would create Git commits (confusing)
 - Slower writes
 - Harder to query (no SQL)
@@ -180,6 +185,7 @@ CREATE TABLE site_settings (
 **Technology:** Cloudflare R2 (S3-compatible object storage)
 
 **Structure:**
+
 ```
 running-red-bucket/
   originals/
@@ -197,17 +203,20 @@ running-red-bucket/
 **Access:** Public read via Cloudflare CDN (or signed URLs if private)
 
 **Why R2?**
+
 - **Zero egress fees** (downloading images is free)
 - S3-compatible API (easy to work with)
 - Cloudflare CDN built-in (fast delivery)
 - Free tier: 10GB storage, 1M reads/month
 
 **Why not store images in the database?**
+
 - Databases aren't designed for large binary files
 - Expensive to scale
 - Slower to serve
 
 **Why not Vercel Blob Storage?**
+
 - Could work, but R2's zero egress is compelling
 - R2 is already proven (used by many webcomics/image-heavy sites)
 
@@ -235,11 +244,13 @@ running-red-bucket/
 6. **Return success** to admin UI
 
 **Why WebP?**
+
 - ~30% smaller than JPEG at equivalent quality
 - Universal browser support (as of 2023+)
 - Better compression for both photos and graphics
 
 **Why two sizes (desktop + mobile)?**
+
 - Mobile users on 4G don't need 1200px images
 - Responsive images (`<picture>` element with `srcset`) load the right size
 - Faster page loads = better UX
@@ -268,6 +279,7 @@ running-red-bucket/
 4. User clicks "Next" → navigates to `page-43` (repeat)
 
 **Why Server Components?**
+
 - No client-side API calls (faster initial load)
 - SEO-friendly (HTML includes content)
 - Smaller JS bundle (less code shipped to browser)
@@ -323,6 +335,7 @@ running-red-bucket/
 **Approach:** NextAuth.js with credentials provider (or simpler password auth)
 
 **Simple Option (Recommended):**
+
 - Single user (Ren)
 - Email + password stored in environment variables
 - Login form at `/admin/login`
@@ -330,24 +343,27 @@ running-red-bucket/
 - Middleware protects `/admin/*` routes
 
 **Implementation:**
+
 ```typescript
 // middleware.ts
 export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith('/admin')) {
-    const session = getSession(request) // Check cookie
+  if (request.nextUrl.pathname.startsWith("/admin")) {
+    const session = getSession(request); // Check cookie
     if (!session) {
-      return NextResponse.redirect('/admin/login')
+      return NextResponse.redirect("/admin/login");
     }
   }
 }
 ```
 
 **Why not NextAuth with OAuth (Google, GitHub)?**
+
 - Overkill for single user
 - More dependencies
 - Ren just needs a simple password
 
 **Why not role-based access control?**
+
 - Only one user (Ren)
 - No need for "editor" vs "admin" roles
 
@@ -360,6 +376,7 @@ export function middleware(request: NextRequest) {
 **Platform:** Vercel (recommended) or Netlify
 
 **Process:**
+
 1. Push to Git (main branch)
 2. Vercel auto-deploys
 3. Environment variables set in Vercel dashboard:
@@ -368,27 +385,24 @@ export function middleware(request: NextRequest) {
    - `ADMIN_PASSWORD` (or NextAuth secret)
 
 **URLs:**
+
 - Production: `running.red`
 - Preview (PR branches): `*.vercel.app`
 
 ---
 
-### Database
+### Database (Railway)
 
-**Option A: Vercel Postgres** (if using Vercel)
-- Create in Vercel dashboard
-- Connection string auto-injected into Next.js app
-- Free tier: 256MB, 60 hours compute/month
-
-**Option B: Railway or Supabase**
-- Create Postgres instance
-- Copy connection string to Vercel environment variables
+- Create PostgreSQL instance in Railway dashboard
+- Copy connection string to Vercel environment variables (`DATABASE_URL`)
+- Free tier: 500MB, then $5/month
 
 ---
 
 ### Image Storage (R2)
 
 **Setup:**
+
 1. Create Cloudflare account
 2. Create R2 bucket (`running-red`)
 3. Generate API token (read + write)
@@ -405,24 +419,26 @@ Comic pages are **static-first** but can update:
 
 ```typescript
 // app/comic/[slug]/page.tsx
-export const revalidate = 3600 // Revalidate every hour
+export const revalidate = 3600; // Revalidate every hour
 
 export async function generateStaticParams() {
-  const pages = await db.getPublishedPages()
-  return pages.map(p => ({ slug: p.slug }))
+  const pages = await db.getPublishedPages();
+  return pages.map((p) => ({ slug: p.slug }));
 }
 ```
 
 **Benefits:**
+
 - Pages are pre-rendered at build time (fast!)
 - Stale pages revalidate in the background
 - New pages appear within 1 hour (or on-demand revalidation)
 
 **On-Demand Revalidation:**
 When Ren publishes a new page, the API route triggers:
+
 ```typescript
-revalidatePath('/comic/page-43')
-revalidatePath('/archive') // Also update archive
+revalidatePath("/comic/page-43");
+revalidatePath("/archive"); // Also update archive
 ```
 
 ---
@@ -430,12 +446,14 @@ revalidatePath('/archive') // Also update archive
 ### Image Loading
 
 **Strategy:**
+
 - Blur placeholder (base64) shown immediately (from database)
 - Browser loads WebP from R2 (via Cloudflare CDN)
 - `<picture>` element with `srcset` loads appropriate size (desktop or mobile)
 - Adjacent pages preloaded on hover/touch (for instant navigation)
 
 **Example:**
+
 ```tsx
 <picture>
   <source
@@ -458,25 +476,27 @@ revalidatePath('/archive') // Also update archive
 
 ### Threats & Mitigations
 
-| Threat | Mitigation |
-|--------|------------|
-| Unauthorized admin access | Password-protected `/admin` routes, HTTP-only session cookies |
-| SQL injection | Use parameterized queries (Postgres client handles escaping) |
-| XSS (cross-site scripting) | Sanitize user input (commentary, titles), use React (auto-escapes) |
-| CSRF (cross-site request forgery) | CSRF tokens on admin forms (NextAuth handles this) |
-| Image upload abuse | Validate file type (PNG/JPEG only), max size limit (10MB), rate limiting |
-| R2 bucket exposure | Use signed URLs or restrict public access to `images/` only |
+| Threat                            | Mitigation                                                               |
+| --------------------------------- | ------------------------------------------------------------------------ |
+| Unauthorized admin access         | Password-protected `/admin` routes, HTTP-only session cookies            |
+| SQL injection                     | Use parameterized queries (Postgres client handles escaping)             |
+| XSS (cross-site scripting)        | Sanitize user input (commentary, titles), use React (auto-escapes)       |
+| CSRF (cross-site request forgery) | CSRF tokens on admin forms (NextAuth handles this)                       |
+| Image upload abuse                | Validate file type (PNG/JPEG only), max size limit (10MB), rate limiting |
+| R2 bucket exposure                | Use signed URLs or restrict public access to `images/` only              |
 
 ---
 
 ## Monitoring & Error Handling
 
 **Errors:**
+
 - Next.js `error.tsx` boundaries at route level (show friendly error pages)
 - Server errors logged to console (Vercel captures logs)
 - Database errors logged, user sees "Something went wrong"
 
 **Monitoring:**
+
 - Vercel Analytics (built-in, tracks page views, performance)
 - Optional: Sentry for error tracking (if needed later)
 
@@ -487,6 +507,7 @@ revalidatePath('/archive') // Also update archive
 **Current scale:** ~100 pages/year, ~1,000 readers/week (estimate)
 
 **Expected load:**
+
 - Database: Tiny (a few hundred rows max)
 - Images: ~5GB/year (100 pages × ~50MB each)
 - Bandwidth: Minimal (R2's zero egress helps)

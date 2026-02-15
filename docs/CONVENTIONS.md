@@ -10,76 +10,26 @@ This document defines code style, file organization, naming conventions, and dev
 
 **Guiding Principle:** Consistency beats personal preference. Follow these conventions even if you disagree with specific choices.
 
+**Tooling Enforcement:** Many code style rules (import order, TypeScript strict mode, no `any` types, etc.) are enforced by ESLint, Prettier, and TypeScript configs. This document focuses on patterns and decisions that can't be automated.
+
 ---
 
 ## General Principles
 
 1. **Simplicity over cleverness** — This is a webcomic site, not a SaaS platform. Prefer straightforward solutions.
 2. **Don't over-abstract** — Three similar lines of code is better than a premature abstraction.
-3. **TypeScript strict mode everywhere** — No `any` types unless truly unavoidable (and then with a comment explaining why).
-4. **Documentation stays current** — No phase is complete until docs in `docs/` reflect the changes.
-5. **Be explicit** — Implicit behavior is hard to debug. Prefer explicit, verbose code over clever shortcuts.
+3. **Documentation stays current** — No phase is complete until docs in `docs/` reflect the changes.
+4. **Be explicit** — Implicit behavior is hard to debug. Prefer explicit, verbose code over clever shortcuts.
 
 ---
 
 ## TypeScript
-
-### General Rules
-
-- **Strict mode enabled** — `"strict": true` in `tsconfig.json`
-- **No `any` types** — Use `unknown` if you truly don't know the type, then narrow it
-- **No `enum`** — Use `as const` objects or union types instead
-- **Explicit return types** on exported functions; inferred return types on internal functions
-
-**Good:**
-```typescript
-// Union type instead of enum
-type Status = 'draft' | 'published';
-
-// As const for constant objects
-const STATUSES = {
-  DRAFT: 'draft',
-  PUBLISHED: 'published',
-} as const;
-
-// Explicit return type on exported function
-export function getComicPage(slug: string): Promise<ComicPage | null> {
-  // ...
-}
-
-// Inferred return type on internal function
-function formatDate(date: Date) {
-  return date.toISOString(); // TypeScript infers: string
-}
-```
-
-**Bad:**
-```typescript
-// Don't use enum
-enum Status {
-  Draft,
-  Published,
-}
-
-// Don't use any
-function processData(data: any) {
-  // ...
-}
-
-// Don't omit return type on exported function
-export function getComicPage(slug: string) {
-  // ...
-}
-```
-
----
 
 ### Interfaces vs Types
 
 - **Use `interface`** for object shapes
 - **Use `type`** for unions, intersections, and primitives
 
-**Good:**
 ```typescript
 // Interface for object shape
 interface ComicPage {
@@ -102,7 +52,6 @@ type ComicPageWithAuthor = ComicPage & { authorName: string };
 - **Use `null`** for database values that can be absent (maps to SQL NULL)
 - **Use `undefined`** for optional function parameters or missing object properties
 
-**Good:**
 ```typescript
 interface ComicPage {
   title: string | null; // Database field, can be NULL
@@ -251,88 +200,27 @@ running-red/
 
 ## Imports
 
-### Import Order
+Use `@/` path alias for imports from `src/` (configured in `tsconfig.json`).
 
-Group imports in this order:
-1. External packages (React, Next.js, etc.)
-2. Internal modules (aliases: `@/components`, `@/lib`)
-3. Relative imports (`./`, `../`)
-4. Type imports (separate)
-
-**Good:**
-```typescript
-// External
-import { useState } from 'react';
-import Image from 'next/image';
-
-// Internal (aliases)
-import { ComicPage } from '@/components/ComicPage';
-import { getComicPage } from '@/lib/db';
-
-// Relative
-import { formatDate } from './utils';
-
-// Types (separate)
-import type { ComicPage as ComicPageType } from '@/lib/types';
-```
-
----
-
-### Path Aliases
-
-Use `@/` for imports from `src/`.
-
-**tsconfig.json:**
-```json
-{
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  }
-}
-```
-
-**Usage:**
 ```typescript
 // Good
 import { ComicPage } from '@/components/ComicPage';
 import { db } from '@/lib/db';
 
-// Bad (avoid relative paths for src/ files)
+// Avoid deep relative paths
 import { ComicPage } from '../../../components/ComicPage';
 ```
+
+**Note:** Import order (external → internal → relative → types) is enforced by ESLint.
 
 ---
 
 ## React
 
-### Function Components
-
-Use function components only (no class components).
-
-**Good:**
-```typescript
-interface ComicPageProps {
-  page: ComicPage;
-}
-
-export function ComicPage({ page }: ComicPageProps) {
-  return (
-    <div>
-      <h1>{page.title}</h1>
-    </div>
-  );
-}
-```
-
----
-
 ### Props Interfaces
 
-Name props interfaces `{ComponentName}Props`.
+Name props interfaces `{ComponentName}Props` and destructure props in the function signature.
 
-**Good:**
 ```typescript
 interface ComicPageProps {
   page: ComicPage;
@@ -340,7 +228,7 @@ interface ComicPageProps {
 }
 
 export function ComicPage({ page, showTitle = true }: ComicPageProps) {
-  // ...
+  return <div>{page.title}</div>;
 }
 ```
 
@@ -349,23 +237,21 @@ export function ComicPage({ page, showTitle = true }: ComicPageProps) {
 ### Server vs Client Components
 
 - **Prefer Server Components** (Next.js App Router default)
-- **Use `"use client"`** only when needed (state, events, browser APIs)
+- **Use `"use client"`** only when needed
 
 **When to use `"use client"`:**
-- Component uses `useState`, `useEffect`, etc.
+- Component uses `useState`, `useEffect`, or other React hooks
 - Component uses browser APIs (localStorage, window, etc.)
 - Component has event handlers (`onClick`, `onSubmit`, etc.)
 
-**Good:**
 ```typescript
-// Server Component (default, no directive needed)
+// Server Component (default, no directive)
 export function ComicPage({ page }: ComicPageProps) {
   return <div>{page.title}</div>;
 }
 
-// Client Component (needs state)
+// Client Component (needs interactivity)
 "use client";
-
 export function LikeButton() {
   const [likes, setLikes] = useState(0);
   return <button onClick={() => setLikes(likes + 1)}>{likes} likes</button>;
@@ -374,54 +260,12 @@ export function LikeButton() {
 
 ---
 
-### Prop Destructuring
-
-Destructure props in function signature.
-
-**Good:**
-```typescript
-export function ComicPage({ page, showTitle }: ComicPageProps) {
-  // ...
-}
-```
-
-**Bad:**
-```typescript
-export function ComicPage(props: ComicPageProps) {
-  const { page, showTitle } = props; // Don't do this
-}
-```
-
----
-
 ## CSS / Styling
 
-### Tailwind CSS
+### Mobile-First Approach
 
-Use Tailwind utility classes for styling.
+Use mobile-first responsive design. Base styles are for mobile, then add breakpoints (`sm:`, `md:`, `lg:`).
 
-**Class Order:**
-1. Layout (display, position, flex, grid)
-2. Sizing (width, height, padding, margin)
-3. Typography (font, text, leading)
-4. Visual (colors, borders, shadows)
-5. Responsive (sm:, md:, lg:)
-6. State (hover:, focus:, active:)
-
-**Good:**
-```tsx
-<div className="flex flex-col items-center gap-8 px-4 py-8 max-w-4xl mx-auto bg-white rounded-lg shadow-md sm:px-6 md:px-8 hover:shadow-lg">
-  {/* Content */}
-</div>
-```
-
----
-
-### Mobile-First
-
-Use mobile-first responsive design. Base styles are for mobile, then add breakpoints.
-
-**Good:**
 ```tsx
 <div className="w-full px-4 sm:px-6 md:w-3/4 md:px-8 lg:w-1/2">
   {/* Mobile: full width, 1rem padding */}
@@ -434,19 +278,8 @@ Use mobile-first responsive design. Base styles are for mobile, then add breakpo
 
 ### Extract Repeated Patterns
 
-If a component uses the same Tailwind classes repeatedly, extract it into a component.
+If the same Tailwind classes appear multiple times, extract them into a reusable component.
 
-**Bad:**
-```tsx
-<button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-  Save
-</button>
-<button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-  Cancel
-</button>
-```
-
-**Good:**
 ```tsx
 // components/ui/Button.tsx
 export function Button({ children, ...props }: ButtonProps) {
@@ -462,6 +295,8 @@ export function Button({ children, ...props }: ButtonProps) {
 <Button>Cancel</Button>
 ```
 
+**Note:** Tailwind class order is enforced by Prettier with the Tailwind plugin.
+
 ---
 
 ## Database
@@ -472,31 +307,23 @@ export function Button({ children, ...props }: ButtonProps) {
 - **Columns:** `snake_case` (e.g., `page_number`, `created_at`)
 - **Indexes:** `idx_{table}_{column}` (e.g., `idx_comic_pages_status`)
 
-**Why snake_case?**
-- PostgreSQL convention
-- Easier to read in SQL queries
-- Avoids quoting issues (camelCase requires quotes in Postgres)
+**Why snake_case?** PostgreSQL convention, avoids quoting issues.
 
 ---
 
-### Queries
+### Always Use Parameterized Queries
 
-Use parameterized queries (never string concatenation).
+Never use string concatenation in SQL queries (SQL injection risk).
 
-**Good:**
 ```typescript
+// Good
 const page = await db.query(
   'SELECT * FROM comic_pages WHERE slug = $1',
   [slug]
 );
-```
 
-**Bad:**
-```typescript
-// SQL injection vulnerability!
-const page = await db.query(
-  `SELECT * FROM comic_pages WHERE slug = '${slug}'`
-);
+// NEVER do this
+const page = await db.query(`SELECT * FROM comic_pages WHERE slug = '${slug}'`);
 ```
 
 ---

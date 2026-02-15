@@ -248,16 +248,10 @@ An HTML attribute that lists multiple image sources (sizes) for the browser to c
 The company that provides R2 (object storage) and CDN. Also handles DNS for the domain.
 
 ### Railway
-A platform for hosting databases and backend services. We might use Railway for PostgreSQL (or Vercel Postgres instead).
-
-### Supabase
-An open-source Firebase alternative. Provides PostgreSQL hosting with real-time features. We might use this for the database.
+A platform for hosting databases and backend services. We use Railway for PostgreSQL.
 
 ### Vercel
 The platform that hosts the Next.js app. Auto-deploys on Git push, provides preview URLs, has a generous free tier.
-
-### Vercel Postgres
-Vercel's managed PostgreSQL offering. Free tier: 256MB storage, 60 hours compute/month.
 
 ---
 

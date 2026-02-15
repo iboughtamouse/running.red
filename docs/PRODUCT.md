@@ -210,27 +210,48 @@ Running Red is a webcomic reader and content management system for a single-auth
 
 ## Content Warning System
 
-**Goal:** Warn readers before showing sensitive content, without spoiling what the content is.
+**Goal:** Warn readers before showing sensitive content with specific, clear warnings.
 
-**Behavior:**
-1. Page with `content_warning=true` displays:
+**Predefined Warning Types:**
+- Abuse
+- Trauma
+- Self-harm/Suicide
+- Eating Disorders
+- Violence
+- Death/Dying
+- Mental Illness
+- Other (custom text)
+
+**Reader Experience:**
+
+1. **Page with content warnings** displays:
    - Blurred image (CSS `filter: blur(20px)`)
-   - Overlay with:
-     - Warning text (custom per-page, or default: "This page contains sensitive content")
-     - "View Page" button
-2. When reader clicks "View Page":
-   - Remove blur, remove overlay
-   - Show page normally
-3. Reader's choice to reveal is **not persisted** (resets on navigation/refresh)
+   - Overlay centered on screen:
+     ```
+     ⚠️ Content Warning
 
-**Why not persist the choice?**
-- Adds complexity (cookies or local storage)
-- Different readers may have different needs (one reader okay with violence, another not)
-- Each page should require explicit consent
+     This page contains:
+     • Violence
+     • Death/Dying
 
-**Default warning text:** "This page contains sensitive content. Click to view."
+     [ View Page ]
+     ```
 
-**Custom warning text example:** "This page depicts violence."
+2. **When reader clicks "View Page":**
+   - Remove blur and overlay
+   - Show comic page normally
+   - Display warning types as pills below the comic:
+     ```
+     [Comic image]
+
+     Content: [Violence] [Death/Dying]
+     ```
+
+3. **Reader's choice is not persisted** (resets on navigation/refresh)
+   - Each page requires explicit consent
+   - Different readers have different sensitivities
+
+**See [CONTENT_MODEL.md](CONTENT_MODEL.md#content-warning-values) for database structure.**
 
 ---
 
@@ -312,8 +333,15 @@ Running Red is a webcomic reader and content management system for a single-auth
   - **Image** (file upload, required, accepts PNG/JPEG)
   - **Commentary** (textarea, markdown or plain text, optional)
   - **Publish Date** (date picker, required)
-  - **Content Warning** (checkbox)
-  - **Content Warning Text** (text input, visible only if checkbox checked)
+  - **Content Warnings** (checkbox group):
+    - ☐ Abuse
+    - ☐ Trauma
+    - ☐ Self-harm/Suicide
+    - ☐ Eating Disorders
+    - ☐ Violence
+    - ☐ Death/Dying
+    - ☐ Mental Illness
+    - ☐ Other: [text input]
   - **Status** (radio buttons: Draft, Published)
 - "Save" button
 - "Cancel" button (returns to `/admin/comics`)
@@ -518,7 +546,7 @@ These features are explicitly NOT included in the initial build:
 2. As Ren, I want to set a publish date for a page, so I can prepare pages in advance.
 3. As Ren, I want to mark pages as Draft, so I can preview them before publishing.
 4. As Ren, I want to replace an image for an existing page, so I can update old artwork.
-5. As Ren, I want to add a content warning to sensitive pages, so readers are prepared.
+5. As Ren, I want to select specific content warnings for sensitive pages, so readers know exactly what to expect.
 6. As Ren, I want to edit the About page, so I can update my bio or comic description.
 7. As Ren, I want to add/remove links, so I can keep my Patreon, Twitch, etc. up-to-date.
 8. As Ren, I want to see confirmation messages when I save, so I know my changes worked.

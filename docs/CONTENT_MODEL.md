@@ -47,9 +47,9 @@ CREATE TABLE comic_pages (
   -- Content
   commentary TEXT,                           -- Markdown or plain text
 
-  -- Content warning
-  content_warning BOOLEAN DEFAULT FALSE,
-  content_warning_text VARCHAR(255),
+  -- Content warnings (multiselect from predefined list)
+  content_warnings TEXT[] DEFAULT '{}',     -- Array of warning types
+  content_warning_other TEXT,               -- Free text for "Other"
 
   -- Publishing
   publish_date DATE NOT NULL,
@@ -78,8 +78,8 @@ CREATE INDEX idx_comic_pages_page_number ON comic_pages(page_number);
 | `image_mobile_url` | Varchar(500) | No | R2 URL for the mobile WebP image. Can be null (falls back to desktop). |
 | `image_blur_hash` | Text | No | Base64-encoded tiny placeholder image (for loading state). Can be null. |
 | `commentary` | Text | No | Author's notes displayed below the comic page. Markdown or plain text. Can be null. |
-| `content_warning` | Boolean | No | If true, page is blurred with a confirmation overlay. Defaults to false. |
-| `content_warning_text` | Varchar(255) | No | Custom warning text (e.g., "This page depicts violence"). If null, uses default: "This page contains sensitive content." |
+| `content_warnings` | Text[] | No | Array of content warning types. Valid values: `'abuse'`, `'trauma'`, `'self-harm-suicide'`, `'eating-disorders'`, `'violence'`, `'death-dying'`, `'mental-illness'`. Empty array = no warnings. |
+| `content_warning_other` | Text | No | Free text for content warnings not covered by predefined list. Only shown if not null. |
 | `publish_date` | Date | Yes | The date when this page becomes visible to readers. Pages with future dates are hidden. |
 | `status` | Varchar(20) | Yes | Either "draft" or "published". Drafts are only visible in admin. Defaults to "draft". |
 | `created_at` | Timestamp | Yes | When the row was created. Auto-set. |
@@ -90,7 +90,7 @@ CREATE INDEX idx_comic_pages_page_number ON comic_pages(page_number);
 ```sql
 INSERT INTO comic_pages (
   page_number, slug, title, image_url, image_mobile_url, image_blur_hash,
-  commentary, content_warning, content_warning_text, publish_date, status
+  commentary, content_warnings, content_warning_other, publish_date, status
 ) VALUES (
   42,
   'page-42',
@@ -99,8 +99,8 @@ INSERT INTO comic_pages (
   'https://pub-abc123.r2.dev/images/page-42-mobile.webp',
   'data:image/webp;base64,UklGRi...',
   'This took forever to draw! Hope you like it.',
-  true,
-  'This page depicts violence.',
+  ARRAY['violence', 'death-dying'],
+  NULL,
   '2026-02-17',
   'published'
 );
@@ -151,6 +151,27 @@ WHERE page_number > 42
 ORDER BY page_number ASC
 LIMIT 1;
 ```
+
+**Content Warning Values:**
+
+Pages can have multiple content warnings. Valid predefined values:
+
+| Value | Display Label |
+|-------|---------------|
+| `abuse` | Abuse |
+| `trauma` | Trauma |
+| `self-harm-suicide` | Self-harm/Suicide |
+| `eating-disorders` | Eating Disorders |
+| `violence` | Violence |
+| `death-dying` | Death/Dying |
+| `mental-illness` | Mental Illness |
+
+If none of the predefined values fit, use the `content_warning_other` field for custom text.
+
+**Display Logic:**
+- If `content_warnings` array is empty AND `content_warning_other` is null → No warning shown
+- If `content_warnings` has values → Show blur overlay with list of warnings
+- If `content_warning_other` is set → Also display in warning list
 
 ---
 
@@ -363,6 +384,19 @@ These types mirror the database schema for type safety in the Next.js app.
 **File:** `lib/types.ts`
 
 ```typescript
+// Content Warning Types
+export const CONTENT_WARNING_TYPES = {
+  ABUSE: 'abuse',
+  TRAUMA: 'trauma',
+  SELF_HARM_SUICIDE: 'self-harm-suicide',
+  EATING_DISORDERS: 'eating-disorders',
+  VIOLENCE: 'violence',
+  DEATH_DYING: 'death-dying',
+  MENTAL_ILLNESS: 'mental-illness',
+} as const;
+
+export type ContentWarningType = (typeof CONTENT_WARNING_TYPES)[keyof typeof CONTENT_WARNING_TYPES];
+
 // Comic Page
 export interface ComicPage {
   id: number;
@@ -373,8 +407,8 @@ export interface ComicPage {
   imageMobileUrl: string | null;
   imageBlurHash: string | null;
   commentary: string | null;
-  contentWarning: boolean;
-  contentWarningText: string | null;
+  contentWarnings: ContentWarningType[]; // Array of predefined warning types
+  contentWarningOther: string | null; // Custom warning text
   publishDate: string; // ISO date string
   status: 'draft' | 'published';
   createdAt: string; // ISO timestamp
@@ -465,7 +499,8 @@ https://pub-abc123.r2.dev/images/page-42-desktop.webp
 | `image_url` | Must be valid URL, required |
 | `image_mobile_url` | Must be valid URL if provided |
 | `commentary` | No HTML tags (sanitize), optional |
-| `content_warning_text` | Max 255 chars, optional |
+| `content_warnings` | Each value must be in predefined list, optional |
+| `content_warning_other` | Max 500 chars, optional |
 | `publish_date` | Must be valid date, required |
 | `status` | Must be 'draft' or 'published' |
 
