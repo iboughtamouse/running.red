@@ -1,148 +1,511 @@
 # Conventions
 
-> Last updated: 2026-02-09
+**Last updated:** 2026-02-15
+
+---
+
+## Overview
+
+This document defines code style, file organization, naming conventions, and development workflow for the Running Red project.
+
+**Guiding Principle:** Consistency beats personal preference. Follow these conventions even if you disagree with specific choices.
+
+**Tooling Enforcement:** Many code style rules (import order, TypeScript strict mode, no `any` types, etc.) are enforced by ESLint, Prettier, and TypeScript configs. This document focuses on patterns and decisions that can't be automated.
+
+---
 
 ## General Principles
 
-1. **Simplicity over cleverness.** This is a webcomic site, not a SaaS platform. Prefer straightforward solutions.
-2. **Don't over-abstract.** Three similar lines of code is better than a premature abstraction.
-3. **TypeScript strict mode everywhere.** No `any` types unless truly unavoidable (and then with a comment explaining why).
-4. **Documentation stays current.** No phase is complete until docs in `docs/` reflect the changes.
+1. **Simplicity over cleverness** — This is a webcomic site, not a SaaS platform. Prefer straightforward solutions.
+2. **Don't over-abstract** — Three similar lines of code is better than a premature abstraction.
+3. **Documentation stays current** — No phase is complete until docs in `docs/` reflect the changes.
+4. **Be explicit** — Implicit behavior is hard to debug. Prefer explicit, verbose code over clever shortcuts.
 
-## Project Structure
+---
 
-### File Naming
+## TypeScript
 
-- **React components:** PascalCase — `ComicPage.tsx`, `NavButton.tsx`
-- **Utilities, hooks, libs:** camelCase — `getComicPage.ts`, `useKeyboardNav.ts`
-- **Route files (Next.js App Router):** lowercase as required — `page.tsx`, `layout.tsx`, `loading.tsx`
-- **CMS collections:** PascalCase files, camelCase slugs — `ComicPages.ts` defines `comic-pages`
-- **Config files:** standard names — `turbo.json`, `tsconfig.json`, `.env.example`
+### Interfaces vs Types
 
-### Directory Conventions
+- **Use `interface`** for object shapes
+- **Use `type`** for unions, intersections, and primitives
 
-```
-apps/web/
-├── app/                    # Next.js App Router (routes only)
-│   ├── layout.tsx          # Root layout
-│   ├── page.tsx            # Home (latest comic page)
-│   ├── comic/[slug]/
-│   │   └── page.tsx        # Individual comic page
-│   ├── about/
-│   │   └── page.tsx
-│   ├── archive/
-│   │   └── page.tsx
-│   ├── links/
-│   │   └── page.tsx
-│   └── rss.xml/
-│       └── route.ts        # RSS route handler
-├── components/             # React components
-│   ├── comic/              # Comic-specific components
-│   ├── layout/             # Header, footer, nav
-│   └── ui/                 # Generic UI primitives
-├── lib/                    # Utilities, API clients, helpers
-│   ├── api.ts              # CMS API client
-│   └── utils.ts            # Generic utilities
-└── styles/                 # Global styles
+```typescript
+// Interface for object shape
+interface ComicPage {
+  id: number;
+  title: string | null;
+  status: Status;
+}
+
+// Type for union
+type Status = 'draft' | 'published';
+
+// Type for intersection
+type ComicPageWithAuthor = ComicPage & { authorName: string };
 ```
 
-### Imports
+---
 
-- Use path aliases: `@/components/...`, `@/lib/...`
-- Group imports: external packages, then internal modules, then relative imports
-- No barrel exports (`index.ts` re-exports) unless a directory has 5+ exports
+### Null vs Undefined
 
-## Code Style
+- **Use `null`** for database values that can be absent (maps to SQL NULL)
+- **Use `undefined`** for optional function parameters or missing object properties
 
-### TypeScript
+```typescript
+interface ComicPage {
+  title: string | null; // Database field, can be NULL
+}
 
-- Strict mode enabled (`"strict": true` in tsconfig)
-- Prefer `interface` for object shapes, `type` for unions/intersections
-- Use `const` by default, `let` only when reassignment is needed
-- No `enum` — use `as const` objects or union types instead
-- Explicit return types on exported functions; inferred return types on internal functions
+function renderPage(options?: { showTitle: boolean }) {
+  const showTitle = options?.showTitle ?? true; // undefined if not provided
+}
+```
 
-### React
+---
 
-- Function components only (no class components)
-- Prefer server components (Next.js App Router default); use `"use client"` only when needed
-- Props interfaces named `{ComponentName}Props`
-- Destructure props in function signature
-- Co-locate component-specific types with the component file
+## File Naming
 
-### CSS / Styling
+### React Components
 
-- **Tailwind CSS** for styling
-- Use semantic class grouping: layout, then typography, then visual (colors, borders)
-- Extract repeated patterns into components, not utility classes
-- Responsive design: mobile-first (`sm:`, `md:`, `lg:` breakpoints)
+**PascalCase** for component files.
 
-### Error Handling
+```
+components/
+  ComicPage.tsx
+  NavButton.tsx
+  ContentWarning.tsx
+```
 
-- Let errors bubble naturally; don't catch-and-swallow
-- Use Next.js `error.tsx` boundaries at route level
-- Log errors server-side; show friendly messages client-side
-- Validate at system boundaries only (API responses, CMS data)
+---
+
+### Utilities, Hooks, Libs
+
+**camelCase** for non-component files.
+
+```
+lib/
+  getComicPage.ts
+  formatDate.ts
+  useKeyboardNav.ts  # Hooks start with "use"
+  db.ts              # Database client
+```
+
+---
+
+### Next.js App Router
+
+**Lowercase** as required by Next.js.
+
+```
+app/
+  page.tsx           # Home page
+  layout.tsx         # Root layout
+  loading.tsx        # Loading state
+  error.tsx          # Error boundary
+  comic/
+    [slug]/
+      page.tsx       # Dynamic route
+```
+
+---
+
+### Database & Config Files
+
+**Standard names** for config files.
+
+```
+tsconfig.json
+package.json
+.env.local
+.gitignore
+```
+
+---
+
+## Directory Structure
+
+```
+running-red/
+  docs/                         # Documentation (you are here)
+  public/                       # Static assets
+    favicon.ico
+    robots.txt
+  src/                          # Source code
+    app/                        # Next.js App Router
+      (public)/                 # Public routes (grouped for organization)
+        page.tsx                # Home page
+        comic/
+          [slug]/
+            page.tsx            # Comic page
+        about/
+          page.tsx              # About page
+        archive/
+          page.tsx              # Archive page
+        links/
+          page.tsx              # Links page
+        rss.xml/
+          route.ts              # RSS feed
+      admin/                    # Admin routes (protected)
+        layout.tsx              # Admin layout with auth wrapper
+        page.tsx                # Admin dashboard
+        comics/
+          page.tsx              # List comics
+          new/
+            page.tsx            # Add new comic
+          [id]/
+            page.tsx            # Edit comic
+        about/
+          page.tsx              # Edit About page
+        links/
+          page.tsx              # Edit Links page
+        settings/
+          page.tsx              # Edit site settings
+      api/                      # API routes
+        admin/
+          upload-image/
+            route.ts            # Image upload endpoint
+        revalidate/
+          route.ts              # Trigger ISR revalidation
+      layout.tsx                # Root layout
+      globals.css               # Global styles
+    components/                 # React components
+      admin/                    # Admin-specific components
+        ComicForm.tsx
+        ImageUpload.tsx
+      public/                   # Public-facing components
+        ComicImage.tsx
+        NavBar.tsx
+        ContentWarning.tsx
+      ui/                       # Generic UI components
+        Button.tsx
+        Input.tsx
+    lib/                        # Utilities, helpers, clients
+      db.ts                     # Database client
+      r2.ts                     # R2 upload utilities
+      image.ts                  # Sharp image processing
+      auth.ts                   # Auth utilities
+      types.ts                  # TypeScript types
+      utils.ts                  # Generic utilities
+  .env.local                    # Environment variables (not committed)
+  .env.example                  # Example env file (committed)
+  .gitignore
+  next.config.ts
+  tsconfig.json
+  package.json
+  README.md
+```
+
+---
+
+## Imports
+
+Use `@/` path alias for imports from `src/` (configured in `tsconfig.json`).
+
+```typescript
+// Good
+import { ComicPage } from '@/components/ComicPage';
+import { db } from '@/lib/db';
+
+// Avoid deep relative paths
+import { ComicPage } from '../../../components/ComicPage';
+```
+
+**Note:** Import order (external → internal → relative → types) is enforced by ESLint.
+
+---
+
+## React
+
+### Props Interfaces
+
+Name props interfaces `{ComponentName}Props` and destructure props in the function signature.
+
+```typescript
+interface ComicPageProps {
+  page: ComicPage;
+  showTitle?: boolean;
+}
+
+export function ComicPage({ page, showTitle = true }: ComicPageProps) {
+  return <div>{page.title}</div>;
+}
+```
+
+---
+
+### Server vs Client Components
+
+- **Prefer Server Components** (Next.js App Router default)
+- **Use `"use client"`** only when needed
+
+**When to use `"use client"`:**
+- Component uses `useState`, `useEffect`, or other React hooks
+- Component uses browser APIs (localStorage, window, etc.)
+- Component has event handlers (`onClick`, `onSubmit`, etc.)
+
+```typescript
+// Server Component (default, no directive)
+export function ComicPage({ page }: ComicPageProps) {
+  return <div>{page.title}</div>;
+}
+
+// Client Component (needs interactivity)
+"use client";
+export function LikeButton() {
+  const [likes, setLikes] = useState(0);
+  return <button onClick={() => setLikes(likes + 1)}>{likes} likes</button>;
+}
+```
+
+---
+
+## CSS / Styling
+
+### Mobile-First Approach
+
+Use mobile-first responsive design. Base styles are for mobile, then add breakpoints (`sm:`, `md:`, `lg:`).
+
+```tsx
+<div className="w-full px-4 sm:px-6 md:w-3/4 md:px-8 lg:w-1/2">
+  {/* Mobile: full width, 1rem padding */}
+  {/* Tablet: 75% width, 1.5rem padding */}
+  {/* Desktop: 50% width, 2rem padding */}
+</div>
+```
+
+---
+
+### Extract Repeated Patterns
+
+If the same Tailwind classes appear multiple times, extract them into a reusable component.
+
+```tsx
+// components/ui/Button.tsx
+export function Button({ children, ...props }: ButtonProps) {
+  return (
+    <button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600" {...props}>
+      {children}
+    </button>
+  );
+}
+
+// Usage
+<Button>Save</Button>
+<Button>Cancel</Button>
+```
+
+**Note:** Tailwind class order is enforced by Prettier with the Tailwind plugin.
+
+---
+
+## Database
+
+### Naming Conventions
+
+- **Tables:** `snake_case` (e.g., `comic_pages`, `site_settings`)
+- **Columns:** `snake_case` (e.g., `page_number`, `created_at`)
+- **Indexes:** `idx_{table}_{column}` (e.g., `idx_comic_pages_status`)
+
+**Why snake_case?** PostgreSQL convention, avoids quoting issues.
+
+---
+
+### Always Use Parameterized Queries
+
+Never use string concatenation in SQL queries (SQL injection risk).
+
+```typescript
+// Good
+const page = await db.query(
+  'SELECT * FROM comic_pages WHERE slug = $1',
+  [slug]
+);
+
+// NEVER do this
+const page = await db.query(`SELECT * FROM comic_pages WHERE slug = '${slug}'`);
+```
+
+---
 
 ## Git
 
 ### Branches
 
-- `main` — production, always deployable
-- `develop` — integration/staging branch, all PRs target this
-- `claude/*` — AI-driven development branches
-- Feature branches merge into `develop` via PR
-- `develop` merges into `main` only after staging validation
+- `main` — Production (deployed to running.red)
+- `develop` — Staging/integration (all PRs target this)
+- Feature branches — `feature/{name}` or `fix/{name}` or just descriptive names
+
+**Workflow:**
+1. Create feature branch from `develop`
+2. Make changes, commit
+3. Open PR to `develop`
+4. Review, merge
+5. `develop` → `main` for production release (after testing)
+
+---
+
+### Commit Messages
+
+Use **Conventional Commits** style.
+
+**Format:** `type: description`
+
+**Types:**
+- `feat` — New feature
+- `fix` — Bug fix
+- `docs` — Documentation changes
+- `chore` — Maintenance (deps, config, etc.)
+- `refactor` — Code changes that don't add features or fix bugs
+- `style` — Formatting, whitespace (not CSS)
+- `test` — Adding or updating tests
+
+**Good:**
+```
+feat: add content warning overlay to comic pages
+fix: prevent navigation to unpublished pages
+docs: update ARCHITECTURE.md with ISR details
+chore: update Next.js to 15.2
+refactor: extract image processing to lib/image.ts
+```
+
+**Bad:**
+```
+updated stuff
+fixed a bug
+WIP
+more changes
+```
+
+---
 
 ### Merge Rules
 
-- **Never push directly to `main` or `develop`.** All changes go through PRs.
-- PRs always target `develop` unless explicitly told otherwise.
-- `develop` → `main` merges require explicit owner approval.
+- **Never push directly to `main` or `develop`**
+- All changes go through PRs
+- PRs must pass CI (typecheck, lint, build) before merging
+- `develop` → `main` merges require explicit approval
 
-### Commits
+---
 
-- Conventional commit style: `type: description`
-- Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `style`, `test`
-- Keep commits focused — one logical change per commit
-- Write messages in imperative mood: "add archive page" not "added archive page"
+## Error Handling
 
-### Pull Requests
+### Let Errors Bubble
 
-- Describe what changed and why
-- Reference relevant docs if a decision was made
-- PRs should be reviewable in under 15 minutes (keep them small)
+Don't catch-and-swallow errors. Let them propagate to error boundaries.
 
-## CMS (Payload)
+**Good:**
+```typescript
+// Let error bubble to error.tsx boundary
+export async function getComicPage(slug: string) {
+  const result = await db.query('SELECT * FROM comic_pages WHERE slug = $1', [slug]);
+  if (!result.rows[0]) {
+    throw new Error('Page not found');
+  }
+  return result.rows[0];
+}
+```
 
-### Collections
+**Bad:**
+```typescript
+// Don't swallow errors
+export async function getComicPage(slug: string) {
+  try {
+    const result = await db.query('SELECT * FROM comic_pages WHERE slug = $1', [slug]);
+    return result.rows[0];
+  } catch (err) {
+    console.error(err); // User sees nothing!
+    return null;
+  }
+}
+```
 
-- One file per collection in `apps/cms/collections/`
-- Collection slugs use kebab-case: `comic-pages`, not `comicPages`
-- Field names use camelCase: `pageNumber`, `publishDate`
-- Always define TypeScript types that mirror collection schemas in `packages/shared`
+---
 
-### Globals
+### Error Boundaries
 
-- One file per global in `apps/cms/globals/`
-- Globals for singleton content: site settings, about page, links page
+Use Next.js `error.tsx` files at route level.
+
+```
+app/
+  comic/
+    [slug]/
+      page.tsx
+      error.tsx  # Catches errors in page.tsx
+```
+
+**error.tsx:**
+```tsx
+'use client'; // Error boundaries must be client components
+
+export default function Error({ error }: { error: Error }) {
+  return (
+    <div>
+      <h1>Something went wrong</h1>
+      <p>{error.message}</p>
+    </div>
+  );
+}
+```
+
+---
+
+## Comments
+
+### When to Comment
+
+- **Complex logic** — If it's not obvious, explain why
+- **Workarounds** — Explain why the workaround is necessary
+- **TODOs** — Mark incomplete work with `// TODO: description`
+- **Type overrides** — If you use `any`, explain why
+
+**Don't comment:**
+- Obvious code (the code itself is documentation)
+- Every function (use TypeScript types instead)
+
+**Good:**
+```typescript
+// Sharp requires the original image to generate blur hash
+// We can't delete the original from R2 until processing is done
+const blurHash = await generateBlurHash(originalBuffer);
+```
+
+**Bad:**
+```typescript
+// Get the comic page
+const page = await getComicPage(slug); // Don't comment obvious code
+```
+
+---
+
+## Documentation
+
+### When to Update Docs
+
+Update `docs/` when:
+- Adding a feature → Update `PRODUCT.md`, `CONTENT_MODEL.md` (if data changes), `IMPLEMENTATION.md`
+- Changing architecture → Update `ARCHITECTURE.md`, `DECISIONS.md`
+- Changing tech → Update `TECH_STACK.md`, `DECISIONS.md`
+- Establishing patterns → Update `CONVENTIONS.md`
+- Completing tasks → Update `IMPLEMENTATION.md`
+
+**Every significant change should result in updated documentation.**
+
+---
 
 ## Testing
 
+*(Testing conventions will be added when tests are written)*
+
+Planned:
 - **Vitest** for unit tests
-- **Playwright** for E2E tests (if/when needed)
-- Test files co-located with source: `ComicNav.test.tsx` next to `ComicNav.tsx`
-- Test behavior, not implementation
-- No minimum coverage target — test what matters (navigation logic, content warnings, API parsing)
+- **Playwright** for E2E tests (if needed)
+- Test files co-located with source: `ComicPage.test.tsx` next to `ComicPage.tsx`
 
-## Documentation Maintenance
+---
 
-Every phase must end with these docs reviewed and updated:
+## Related Docs
 
-| Doc | Update when... |
-|-----|---------------|
-| `ARCHITECTURE.md` | Tech stack, infra, or system design changes |
-| `PRODUCT_SPEC.md` | Features added, modified, or descoped |
-| `CONVENTIONS.md` | New patterns established or old ones revised |
-| `TASKS.md` | Tasks completed, added, or reprioritized |
-| `CLAUDE.md` | Anything an AI agent needs to know on startup changes |
+- **[TECH_STACK.md](TECH_STACK.md)** — Technologies used
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** — System design
+- **[IMPLEMENTATION.md](IMPLEMENTATION.md)** — Development roadmap
