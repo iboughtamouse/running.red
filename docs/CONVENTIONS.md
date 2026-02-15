@@ -10,11 +10,33 @@ This document defines code style, file organization, naming conventions, and dev
 
 **Guiding Principle:** Consistency beats personal preference. Follow these conventions even if you disagree with specific choices.
 
-**Tooling Enforcement:** Many code style rules (import order, TypeScript strict mode, no `any` types, etc.) are enforced by ESLint, Prettier, and TypeScript configs. This document focuses on patterns and decisions that can't be automated.
+---
+
+## What's Enforced by Tooling
+
+These conventions are automatically enforced — violations will fail the build, lint, or commit hooks.
+
+| Convention | Enforced by | Config file |
+|---|---|---|
+| TypeScript strict mode (no `any`, strict null checks) | TypeScript | `tsconfig.json` |
+| Extra strictness (`noUncheckedIndexedAccess`, `noImplicitReturns`, `noFallthroughCasesInSwitch`) | TypeScript | `tsconfig.json` |
+| `interface` for object shapes (not `type`) | ESLint | `eslint.config.mjs` |
+| No `console.log` (use `console.warn`/`console.error` if needed) | ESLint | `eslint.config.mjs` |
+| No deep relative imports (`../../*`) — use `@/` alias | ESLint | `eslint.config.mjs` |
+| Next.js best practices + Core Web Vitals | ESLint | `eslint-config-next` |
+| TypeScript-specific lint rules | ESLint | `eslint-config-next/typescript` |
+| Code formatting (semicolons, double quotes, trailing commas) | Prettier | `.prettierrc.json` |
+| Tailwind class order | Prettier | `prettier-plugin-tailwindcss` |
+| Conventional commit messages (`feat:`, `fix:`, `docs:`, etc.) | commitlint | `commitlint.config.mjs` |
+| Pre-commit lint + typecheck | Husky | `.husky/pre-commit` |
+
+**You don't need to memorize these.** If you violate a rule, the tooling will tell you.
 
 ---
 
 ## General Principles
+
+These are judgment calls that can't be automated:
 
 1. **Simplicity over cleverness** — This is a webcomic site, not a SaaS platform. Prefer straightforward solutions.
 2. **Don't over-abstract** — Three similar lines of code is better than a premature abstraction.
@@ -25,32 +47,26 @@ This document defines code style, file organization, naming conventions, and dev
 
 ## TypeScript
 
-### Interfaces vs Types
+### `interface` vs `type`
 
-- **Use `interface`** for object shapes
-- **Use `type`** for unions, intersections, and primitives
+**`interface` for object shapes** (enforced by ESLint), **`type` for unions and intersections** (by convention):
 
 ```typescript
-// Interface for object shape
+// Object shape → interface
 interface ComicPage {
   id: number;
   title: string | null;
   status: Status;
 }
 
-// Type for union
-type Status = 'draft' | 'published';
-
-// Type for intersection
-type ComicPageWithAuthor = ComicPage & { authorName: string };
+// Union → type
+type Status = "draft" | "published";
 ```
-
----
 
 ### Null vs Undefined
 
-- **Use `null`** for database values that can be absent (maps to SQL NULL)
-- **Use `undefined`** for optional function parameters or missing object properties
+- **`null`** for database values that can be absent (maps to SQL NULL)
+- **`undefined`** for optional function parameters or missing object properties
 
 ```typescript
 interface ComicPage {
@@ -66,60 +82,12 @@ function renderPage(options?: { showTitle: boolean }) {
 
 ## File Naming
 
-### React Components
-
-**PascalCase** for component files.
-
-```
-components/
-  ComicPage.tsx
-  NavButton.tsx
-  ContentWarning.tsx
-```
-
----
-
-### Utilities, Hooks, Libs
-
-**camelCase** for non-component files.
-
-```
-lib/
-  getComicPage.ts
-  formatDate.ts
-  useKeyboardNav.ts  # Hooks start with "use"
-  db.ts              # Database client
-```
-
----
-
-### Next.js App Router
-
-**Lowercase** as required by Next.js.
-
-```
-app/
-  page.tsx           # Home page
-  layout.tsx         # Root layout
-  loading.tsx        # Loading state
-  error.tsx          # Error boundary
-  comic/
-    [slug]/
-      page.tsx       # Dynamic route
-```
-
----
-
-### Database & Config Files
-
-**Standard names** for config files.
-
-```
-tsconfig.json
-package.json
-.env.local
-.gitignore
-```
+| Type | Casing | Example |
+|---|---|---|
+| React components | PascalCase | `ComicPage.tsx`, `NavButton.tsx` |
+| Utilities, hooks, libs | camelCase | `formatDate.ts`, `useKeyboardNav.ts`, `db.ts` |
+| Next.js App Router files | lowercase (required by Next.js) | `page.tsx`, `layout.tsx`, `error.tsx` |
+| Config files | standard names | `tsconfig.json`, `package.json`, `.env.local` |
 
 ---
 
@@ -200,18 +168,16 @@ running-red/
 
 ## Imports
 
-Use `@/` path alias for imports from `src/` (configured in `tsconfig.json`).
+Use `@/` path alias for imports from `src/` (configured in `tsconfig.json`, enforced by ESLint).
 
 ```typescript
 // Good
-import { ComicPage } from '@/components/ComicPage';
-import { db } from '@/lib/db';
+import { ComicPage } from "@/components/ComicPage";
+import { db } from "@/lib/db";
 
-// Avoid deep relative paths
-import { ComicPage } from '../../../components/ComicPage';
+// Will fail lint (deep relative path)
+import { ComicPage } from "../../../components/ComicPage";
 ```
-
-**Note:** Import order (external → internal → relative → types) is enforced by ESLint.
 
 ---
 
@@ -232,31 +198,13 @@ export function ComicPage({ page, showTitle = true }: ComicPageProps) {
 }
 ```
 
----
-
 ### Server vs Client Components
 
 - **Prefer Server Components** (Next.js App Router default)
-- **Use `"use client"`** only when needed
-
-**When to use `"use client"`:**
-- Component uses `useState`, `useEffect`, or other React hooks
-- Component uses browser APIs (localStorage, window, etc.)
-- Component has event handlers (`onClick`, `onSubmit`, etc.)
-
-```typescript
-// Server Component (default, no directive)
-export function ComicPage({ page }: ComicPageProps) {
-  return <div>{page.title}</div>;
-}
-
-// Client Component (needs interactivity)
-"use client";
-export function LikeButton() {
-  const [likes, setLikes] = useState(0);
-  return <button onClick={() => setLikes(likes + 1)}>{likes} likes</button>;
-}
-```
+- **Use `"use client"` only when needed:**
+  - Component uses `useState`, `useEffect`, or other React hooks
+  - Component uses browser APIs (localStorage, window, etc.)
+  - Component has event handlers (`onClick`, `onSubmit`, etc.)
 
 ---
 
@@ -264,38 +212,17 @@ export function LikeButton() {
 
 ### Mobile-First Approach
 
-Use mobile-first responsive design. Base styles are for mobile, then add breakpoints (`sm:`, `md:`, `lg:`).
+Base styles are for mobile, then add breakpoints (`sm:`, `md:`, `lg:`).
 
 ```tsx
 <div className="w-full px-4 sm:px-6 md:w-3/4 md:px-8 lg:w-1/2">
-  {/* Mobile: full width, 1rem padding */}
-  {/* Tablet: 75% width, 1.5rem padding */}
-  {/* Desktop: 50% width, 2rem padding */}
+  {/* Mobile: full width → Tablet: 75% → Desktop: 50% */}
 </div>
 ```
 
----
-
 ### Extract Repeated Patterns
 
-If the same Tailwind classes appear multiple times, extract them into a reusable component.
-
-```tsx
-// components/ui/Button.tsx
-export function Button({ children, ...props }: ButtonProps) {
-  return (
-    <button className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600" {...props}>
-      {children}
-    </button>
-  );
-}
-
-// Usage
-<Button>Save</Button>
-<Button>Cancel</Button>
-```
-
-**Note:** Tailwind class order is enforced by Prettier with the Tailwind plugin.
+If the same Tailwind classes appear 3+ times, extract into a reusable component.
 
 ---
 
@@ -307,23 +234,19 @@ export function Button({ children, ...props }: ButtonProps) {
 - **Columns:** `snake_case` (e.g., `page_number`, `created_at`)
 - **Indexes:** `idx_{table}_{column}` (e.g., `idx_comic_pages_status`)
 
-**Why snake_case?** PostgreSQL convention, avoids quoting issues.
-
----
-
 ### Always Use Parameterized Queries
-
-Never use string concatenation in SQL queries (SQL injection risk).
 
 ```typescript
 // Good
 const page = await db.query(
-  'SELECT * FROM comic_pages WHERE slug = $1',
-  [slug]
+  "SELECT * FROM comic_pages WHERE slug = $1",
+  [slug],
 );
 
-// NEVER do this
-const page = await db.query(`SELECT * FROM comic_pages WHERE slug = '${slug}'`);
+// NEVER do this (SQL injection risk)
+const page = await db.query(
+  `SELECT * FROM comic_pages WHERE slug = '${slug}'`,
+);
 ```
 
 ---
@@ -334,57 +257,35 @@ const page = await db.query(`SELECT * FROM comic_pages WHERE slug = '${slug}'`);
 
 - `main` — Production (deployed to running.red)
 - `develop` — Staging/integration (all PRs target this)
-- Feature branches — `feature/{name}` or `fix/{name}` or just descriptive names
+- Feature branches — `feature/{name}` or `fix/{name}` or descriptive names
 
-**Workflow:**
+### Workflow
+
 1. Create feature branch from `develop`
-2. Make changes, commit
+2. Make changes, commit (conventional commits enforced by commitlint)
 3. Open PR to `develop`
 4. Review, merge
 5. `develop` → `main` for production release (after testing)
 
----
-
 ### Commit Messages
 
-Use **Conventional Commits** style.
+Enforced by commitlint. Format: `type: description`
 
-**Format:** `type: description`
-
-**Types:**
-- `feat` — New feature
-- `fix` — Bug fix
-- `docs` — Documentation changes
-- `chore` — Maintenance (deps, config, etc.)
-- `refactor` — Code changes that don't add features or fix bugs
-- `style` — Formatting, whitespace (not CSS)
-- `test` — Adding or updating tests
-
-**Good:**
-```
-feat: add content warning overlay to comic pages
-fix: prevent navigation to unpublished pages
-docs: update ARCHITECTURE.md with ISR details
-chore: update Next.js to 15.2
-refactor: extract image processing to lib/image.ts
-```
-
-**Bad:**
-```
-updated stuff
-fixed a bug
-WIP
-more changes
-```
-
----
+| Type | Use for |
+|---|---|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation changes |
+| `chore` | Maintenance (deps, config, etc.) |
+| `refactor` | Code changes that don't add features or fix bugs |
+| `style` | Formatting, whitespace (not CSS) |
+| `test` | Adding or updating tests |
 
 ### Merge Rules
 
 - **Never push directly to `main` or `develop`**
 - All changes go through PRs
 - PRs must pass CI (typecheck, lint, build) before merging
-- `develop` → `main` merges require explicit approval
 
 ---
 
@@ -394,102 +295,41 @@ more changes
 
 Don't catch-and-swallow errors. Let them propagate to error boundaries.
 
-**Good:**
 ```typescript
-// Let error bubble to error.tsx boundary
+// Good — let error bubble to error.tsx boundary
 export async function getComicPage(slug: string) {
-  const result = await db.query('SELECT * FROM comic_pages WHERE slug = $1', [slug]);
+  const result = await db.query(
+    "SELECT * FROM comic_pages WHERE slug = $1",
+    [slug],
+  );
   if (!result.rows[0]) {
-    throw new Error('Page not found');
+    throw new Error("Page not found");
   }
   return result.rows[0];
 }
 ```
 
-**Bad:**
-```typescript
-// Don't swallow errors
-export async function getComicPage(slug: string) {
-  try {
-    const result = await db.query('SELECT * FROM comic_pages WHERE slug = $1', [slug]);
-    return result.rows[0];
-  } catch (err) {
-    console.error(err); // User sees nothing!
-    return null;
-  }
-}
-```
-
----
-
 ### Error Boundaries
 
 Use Next.js `error.tsx` files at route level.
-
-```
-app/
-  comic/
-    [slug]/
-      page.tsx
-      error.tsx  # Catches errors in page.tsx
-```
-
-**error.tsx:**
-```tsx
-'use client'; // Error boundaries must be client components
-
-export default function Error({ error }: { error: Error }) {
-  return (
-    <div>
-      <h1>Something went wrong</h1>
-      <p>{error.message}</p>
-    </div>
-  );
-}
-```
 
 ---
 
 ## Comments
 
-### When to Comment
-
-- **Complex logic** — If it's not obvious, explain why
-- **Workarounds** — Explain why the workaround is necessary
-- **TODOs** — Mark incomplete work with `// TODO: description`
-- **Type overrides** — If you use `any`, explain why
-
-**Don't comment:**
-- Obvious code (the code itself is documentation)
-- Every function (use TypeScript types instead)
-
-**Good:**
-```typescript
-// Sharp requires the original image to generate blur hash
-// We can't delete the original from R2 until processing is done
-const blurHash = await generateBlurHash(originalBuffer);
-```
-
-**Bad:**
-```typescript
-// Get the comic page
-const page = await getComicPage(slug); // Don't comment obvious code
-```
+- **Do comment:** Complex logic, workarounds, TODOs
+- **Don't comment:** Obvious code — use TypeScript types as documentation instead
 
 ---
 
 ## Documentation
 
-### When to Update Docs
-
 Update `docs/` when:
-- Adding a feature → Update `PRODUCT.md`, `CONTENT_MODEL.md` (if data changes), `IMPLEMENTATION.md`
-- Changing architecture → Update `ARCHITECTURE.md`, `DECISIONS.md`
-- Changing tech → Update `TECH_STACK.md`, `DECISIONS.md`
-- Establishing patterns → Update `CONVENTIONS.md`
-- Completing tasks → Update `IMPLEMENTATION.md`
-
-**Every significant change should result in updated documentation.**
+- Adding a feature → `PRODUCT.md`, `CONTENT_MODEL.md`, `IMPLEMENTATION.md`
+- Changing architecture → `ARCHITECTURE.md`, `DECISIONS.md`
+- Changing tech → `TECH_STACK.md`, `DECISIONS.md`
+- Establishing patterns → `CONVENTIONS.md`
+- Completing tasks → `IMPLEMENTATION.md`
 
 ---
 

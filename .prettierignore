@@ -1,5 +1,5 @@
-node_modules/
-.next/
-dist/
-build/
+.next
+node_modules
 package-lock.json
+docs/
+*.md

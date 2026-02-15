@@ -26,7 +26,7 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 4. **[CONTENT_MODEL.md](docs/CONTENT_MODEL.md)** — Database schema, types
 5. **[TECH_STACK.md](docs/TECH_STACK.md)** — Technology choices and rationale
 6. **[CONVENTIONS.md](docs/CONVENTIONS.md)** — Code style, git workflow
-7. **[IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** — Phased roadmap (we're on Phase 0)
+7. **[IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** — Phased roadmap (we're on Phase 1)
 
 **Reference:**
 - **[DECISIONS.md](docs/DECISIONS.md)** — Architecture Decision Records (ADRs)
@@ -38,7 +38,7 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 
 **Phase 0: Documentation** ✅ Complete
 
-**Phase 1: Database & API Layer** 🔲 Not started (next up)
+**Phase 1: Database & API Layer** 🔨 In progress (1.1 Project Setup complete)
 
 See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 
@@ -48,11 +48,11 @@ See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 
 | Technology | Purpose |
 |------------|---------|
-| **Next.js 15** | Single app (public + admin routes) |
+| **Next.js 16** | Single app (public + admin routes) |
 | **TypeScript** | Strict mode, no `any` types |
 | **PostgreSQL** | Content metadata (Railway) |
 | **Cloudflare R2** | Image storage (zero egress fees) |
-| **Tailwind CSS** | Styling (mobile-first) |
+| **Tailwind CSS v4** | Styling (mobile-first) |
 | **npm** | Package manager (not pnpm) |
 
 ---

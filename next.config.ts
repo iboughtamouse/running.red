@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-const config: NextConfig = {
+const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   images: {
@@ -16,4 +16,4 @@ const config: NextConfig = {
   },
 };
 
-export default config;
+export default nextConfig;

@@ -1,75 +1,39 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
   {
+    files: ["**/*.{ts,tsx}"],
     rules: {
-      // Enforce import order
-      "import/order": [
+      // Enforce `interface` for object shapes, `type` for unions/intersections
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      // Catch stray console.log — allow warn/error for intentional logging
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Ban deep relative imports — use @/ alias instead
+      "no-restricted-imports": [
         "error",
         {
-          groups: [
-            "builtin",
-            "external",
-            "internal",
-            "parent",
-            "sibling",
-            "index",
-            "type",
-          ],
-          pathGroups: [
+          patterns: [
             {
-              pattern: "@/**",
-              group: "internal",
-              position: "before",
+              group: ["../../*"],
+              message: "Use @/ path alias instead of deep relative imports.",
             },
           ],
-          pathGroupsExcludedImportTypes: ["builtin"],
-          "newlines-between": "always",
-          alphabetize: {
-            order: "asc",
-            caseInsensitive: true,
-          },
-        },
-      ],
-
-      // TypeScript-specific rules
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-        },
-      ],
-      "@typescript-eslint/consistent-type-imports": [
-        "error",
-        {
-          prefer: "type-imports",
-          fixStyle: "separate-type-imports",
-        },
-      ],
-
-      // React-specific rules
-      "react/no-unescaped-entities": "off",
-      "react/jsx-curly-brace-presence": [
-        "error",
-        {
-          props: "never",
-          children: "never",
         },
       ],
     },
   },
-];
+]);
 
 export default eslintConfig;

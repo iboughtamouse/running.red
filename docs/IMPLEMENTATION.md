@@ -33,17 +33,17 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 1: Database & API Layer
+## Phase 1: Database & API Layer 🔨
 
 > **Goal:** Working backend with database, API routes, and image processing. Testable via curl/Postman (no UI).
 
-### 1.1 Project Setup
+### 1.1 Project Setup ✅
 
-- [ ] Initialize Next.js 15 project with TypeScript strict mode
-- [ ] Configure basic directory structure (see [CONVENTIONS.md](CONVENTIONS.md))
-- [ ] Set up ESLint, Prettier configs (encode conventions in tooling)
-- [ ] Create `.env.example` and `.env.local` with required variables
-- [ ] Verify `npm run dev` works
+- [x] Initialize Next.js 16 project with TypeScript strict mode
+- [x] Configure basic directory structure (see [CONVENTIONS.md](CONVENTIONS.md))
+- [x] Set up ESLint, Prettier configs (encode conventions in tooling)
+- [x] Create `.env.example` and `.env.local` with required variables
+- [x] Verify `npm run dev` works
 
 ### 1.2 Database Setup (Railway Postgres)
 
@@ -449,7 +449,7 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔲 Not started |
+| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1 done) |
 | Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |

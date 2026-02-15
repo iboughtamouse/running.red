@@ -77,7 +77,7 @@ This is intentionally simple. One app, one deployment, one database.
 
 **Purpose:** Serves both public pages and admin interface.
 
-**Technology:** Next.js 15 with App Router
+**Technology:** Next.js 16 with App Router
 
 **Key Features:**
 
