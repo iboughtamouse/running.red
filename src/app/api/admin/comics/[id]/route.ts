@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { imageKeys, processImage } from "@/lib/image";
+import { originalKey, processImage, servingKeys } from "@/lib/image";
 import { deleteFile, uploadFile } from "@/lib/r2";
 
 import type { ComicPage, ContentWarningType } from "@/lib/types";
@@ -83,12 +83,13 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     const imageBuffer = Buffer.from(await image.arrayBuffer());
     const processed = await processImage(imageBuffer);
 
-    // Delete old images from R2
-    const oldKeys = imageKeys(currentPage.page_number as number);
-    await Promise.all([deleteFile(oldKeys.desktop), deleteFile(oldKeys.mobile)]);
+    // Upload new original (timestamped — old originals are preserved for version history)
+    const ext = image.name.split(".").pop()?.toLowerCase() || "png";
+    const origKey = originalKey(pageNumber, ext);
+    await uploadFile(origKey, imageBuffer, image.type || "image/png");
 
-    // Upload new images
-    const newKeys = imageKeys(pageNumber);
+    // Overwrite serving variants
+    const newKeys = servingKeys(pageNumber);
     await Promise.all([
       uploadFile(newKeys.desktop, processed.desktop, "image/webp"),
       uploadFile(newKeys.mobile, processed.mobile, "image/webp"),
@@ -100,7 +101,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
   } else if (pageNumber !== currentPage.page_number) {
     // Page number changed but no new image — keep existing R2 keys.
     // The files stay at their original paths; only the DB references matter.
-    const oldKeys = imageKeys(currentPage.page_number as number);
+    const oldKeys = servingKeys(currentPage.page_number as number);
     imageUrl = oldKeys.desktop;
     imageMobileUrl = oldKeys.mobile;
   }
@@ -155,8 +156,8 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
 
   const pageNumber = existing.rows[0].page_number as number;
 
-  // Delete images from R2
-  const keys = imageKeys(pageNumber);
+  // Delete serving variants from R2 (originals are preserved for version history)
+  const keys = servingKeys(pageNumber);
   await Promise.all([deleteFile(keys.desktop), deleteFile(keys.mobile)]);
 
   // Delete from database

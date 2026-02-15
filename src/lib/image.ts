@@ -43,9 +43,19 @@ async function generateBlurDataUrl(image: sharp.Sharp): Promise<string> {
 }
 
 /**
- * Build R2 object keys for a comic page's images.
+ * Build R2 object key for a new original upload.
+ * Timestamped so originals accumulate (never overwritten or deleted).
  */
-export function imageKeys(pageNumber: number): {
+export function originalKey(pageNumber: number, extension: string): string {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  return `originals/page-${pageNumber}-${timestamp}.${extension}`;
+}
+
+/**
+ * Build R2 object keys for the current serving variants.
+ * These get overwritten when an image is replaced.
+ */
+export function servingKeys(pageNumber: number): {
   desktop: string;
   mobile: string;
 } {

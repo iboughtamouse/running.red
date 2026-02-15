@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { imageKeys, processImage } from "@/lib/image";
+import { originalKey, processImage, servingKeys } from "@/lib/image";
 import { uploadFile } from "@/lib/r2";
 
 import type { ComicPage, ContentWarningType } from "@/lib/types";
@@ -71,9 +71,12 @@ export async function POST(request: Request): Promise<Response> {
   const imageBuffer = Buffer.from(await image.arrayBuffer());
   const processed = await processImage(imageBuffer);
 
-  // Upload to R2
-  const keys = imageKeys(pageNumber);
+  // Upload original (timestamped, never deleted) + serving variants to R2
+  const ext = image.name.split(".").pop()?.toLowerCase() || "png";
+  const origKey = originalKey(pageNumber, ext);
+  const keys = servingKeys(pageNumber);
   await Promise.all([
+    uploadFile(origKey, imageBuffer, image.type || "image/png"),
     uploadFile(keys.desktop, processed.desktop, "image/webp"),
     uploadFile(keys.mobile, processed.mobile, "image/webp"),
   ]);
