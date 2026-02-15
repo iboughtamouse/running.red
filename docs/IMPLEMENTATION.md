@@ -33,7 +33,7 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 1: Database & API Layer 🔨
+## Phase 1: Database & API Layer ✅
 
 > **Goal:** Working backend with database, API routes, and image processing. Testable via curl/Postman (no UI).
 
@@ -89,12 +89,12 @@ This document outlines the phased implementation plan for Running Red. The appro
 - [x] Create `/api/admin/settings` route (GET/PUT for site settings)
 - [x] Create `/api/comics` route (GET - public, published pages only)
 
-### 1.6 Testing (No UI Yet)
+### 1.6 Testing (No UI Yet) ✅
 
-- [ ] Test all API routes with curl or Postman
-- [ ] Verify image upload → Sharp processing → R2 upload works
-- [ ] Verify database CRUD operations work
-- [ ] Verify published vs draft filtering works
+- [x] Test all API routes with curl or Postman
+- [x] Verify image upload → Sharp processing → R2 upload works
+- [x] Verify database CRUD operations work
+- [x] Verify published vs draft filtering works
 
 **Completion Criteria:**
 - ✅ Railway Postgres is set up and accessible
@@ -449,7 +449,7 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.5 done) |
+| Phase 1: Database & API | 2-3 days | ✅ Done |
 | Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |

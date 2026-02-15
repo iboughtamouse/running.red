@@ -26,7 +26,7 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 4. **[CONTENT_MODEL.md](docs/CONTENT_MODEL.md)** — Database schema, types
 5. **[TECH_STACK.md](docs/TECH_STACK.md)** — Technology choices and rationale
 6. **[CONVENTIONS.md](docs/CONVENTIONS.md)** — Code style, git workflow
-7. **[IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** — Phased roadmap (we're on Phase 1)
+7. **[IMPLEMENTATION.md](docs/IMPLEMENTATION.md)** — Phased roadmap (we're on Phase 2)
 
 **Reference:**
 - **[DECISIONS.md](docs/DECISIONS.md)** — Architecture Decision Records (ADRs)
@@ -38,7 +38,9 @@ The `docs/` directory contains comprehensive documentation. Read these in order:
 
 **Phase 0: Documentation** ✅ Complete
 
-**Phase 1: Database & API Layer** 🔨 In progress (1.1 Project Setup complete)
+**Phase 1: Database & API Layer** ✅ Complete
+
+**Phase 2: Admin Interface** 🔲 Not started (next up)
 
 See [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md) for the full roadmap.
 
