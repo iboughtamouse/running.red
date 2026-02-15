@@ -4,7 +4,7 @@ import type { NextRequest } from "next/server";
 
 const SESSION_COOKIE = "running-red-session";
 
-export function middleware(request: NextRequest): NextResponse {
+export function proxy(request: NextRequest): NextResponse {
   const { pathname } = request.nextUrl;
 
   // Allow login page and auth API without session

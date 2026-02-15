@@ -74,7 +74,7 @@ export default async function AdminComicsPage() {
                 </td>
                 <td className="py-3 text-right text-sm">
                   <Link
-                    href={`/admin/comics/${page.id}`}
+                    href={`/admin/comics/${page.slug}`}
                     className="text-blue-600 hover:underline"
                   >
                     Edit

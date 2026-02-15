@@ -36,7 +36,9 @@ export function EditComicForm({ comic }: { comic: ComicPage }) {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const existingImageUrl = comic.imageUrl ? `/api/images/${comic.imageUrl}` : null;
+  const existingImageUrl = comic.imageUrl
+    ? `/api/images/${comic.imageUrl}?v=${comic.updatedAt}`
+    : null;
 
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

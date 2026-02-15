@@ -8,10 +8,10 @@ import type { ComicPage, ContentWarningType } from "@/lib/types";
 export default async function EditComicPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { id } = await params;
-  const result = await db.query("SELECT * FROM comic_pages WHERE id = $1", [id]);
+  const { slug } = await params;
+  const result = await db.query("SELECT * FROM comic_pages WHERE slug = $1", [slug]);
 
   if (result.rows.length === 0) {
     notFound();

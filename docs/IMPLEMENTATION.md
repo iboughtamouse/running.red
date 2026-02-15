@@ -155,14 +155,9 @@ This document outlines the phased implementation plan for Running Red. The appro
   - Form for site title, description, social image upload
   - On submit: PUT to `/api/admin/settings`
 
-### 2.5 Image Upload UI
+### 2.5 Image Upload UI — Skipped
 
-- [ ] Create `components/admin/ImageUpload.tsx`:
-  - File input (accepts PNG/JPEG)
-  - Image preview after selection
-  - Upload to `/api/admin/upload-image` route
-  - Show progress/success/error states
-  - Return R2 URLs + blur hash to parent form
+Image upload is handled inline within the comic create/edit forms (file input + FormData submission). A dedicated upload component with a separate API route, progress indicators, and pre-submission processing was deemed unnecessary for now — Ren uploads once a week. If the UX becomes a pain point, revisit this.
 
 ### 2.6 Testing (Still Local)
 
