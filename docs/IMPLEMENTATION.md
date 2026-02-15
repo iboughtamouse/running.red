@@ -45,27 +45,27 @@ This document outlines the phased implementation plan for Running Red. The appro
 - [x] Create `.env.example` and `.env.local` with required variables
 - [x] Verify `npm run dev` works
 
-### 1.2 Database Setup (Railway Postgres)
+### 1.2 Database Setup (Railway Postgres) ✅
 
-- [ ] Create Railway Postgres instance
-- [ ] Get connection string, add to `.env.local`
-- [ ] Create initial schema migration:
+- [x] Create Railway Postgres instance
+- [x] Get connection string, add to `.env.local`
+- [x] Create initial schema migration:
   - `comic_pages` table
   - `about_page` table
   - `links_page` table
   - `site_settings` table
-- [ ] Run migration, verify tables exist
-- [ ] Seed database with default data (site settings, about page, empty links)
-- [ ] Create `lib/db.ts` (Postgres client)
-- [ ] Create `lib/types.ts` (TypeScript types matching schema)
+- [x] Run migration, verify tables exist
+- [x] Seed database with default data (site settings, about page, empty links)
+- [x] Create `lib/db.ts` (Postgres client)
+- [x] Create `lib/types.ts` (TypeScript types matching schema)
 
-### 1.3 Cloudflare R2 Setup
+### 1.3 Cloudflare R2 Setup ✅
 
-- [ ] Create Cloudflare R2 bucket
-- [ ] Generate API credentials (access key, secret key)
-- [ ] Add R2 config to `.env.local`
-- [ ] Create `lib/r2.ts` (R2 upload/download utilities)
-- [ ] Test upload/download manually (via Node script or API route)
+- [x] Create Cloudflare R2 bucket
+- [x] Generate API credentials (access key, secret key)
+- [x] Add R2 config to `.env.local`
+- [x] Create `lib/r2.ts` (R2 upload/download utilities)
+- [x] Test upload/download manually (via Node script or API route)
 
 ### 1.4 Image Processing
 
@@ -449,7 +449,7 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1 done) |
+| Phase 1: Database & API | 2-3 days | 🔨 In progress (1.1–1.3 done) |
 | Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
 | Phase 3: Public Website | 3-4 days | 🔲 Not started |
 | Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |
