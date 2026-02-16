@@ -14,7 +14,7 @@ This document describes every technology used in the project and explains **why*
 
 | Technology | Purpose | Version | Why This? |
 |------------|---------|---------|-----------|
-| **Next.js** | Web framework | 15.x | SSG/ISR perfect for webcomic, App Router = less client JS, Vercel deployment |
+| **Next.js** | Web framework | 16.x | SSG/ISR perfect for webcomic, App Router = less client JS, Vercel deployment |
 | **React** | UI library | 19.x | Required by Next.js, Server Components reduce bundle size |
 | **TypeScript** | Language | 5.x | Type safety, better DX, catches errors at compile time |
 | **PostgreSQL** | Database | 15+ | Reliable, generous free tiers, good for structured data |
@@ -24,7 +24,7 @@ This document describes every technology used in the project and explains **why*
 
 ## Detailed Choices
 
-### Next.js 15
+### Next.js 16
 
 **What it provides:**
 - File-based routing (App Router)
@@ -33,6 +33,12 @@ This document describes every technology used in the project and explains **why*
 - Built-in image optimization
 - API routes
 - TypeScript support out of the box
+
+**Notable changes from Next.js 15:**
+- `next lint` removed — ESLint runs directly via `eslint` CLI
+- `eslint` config option removed from `next.config.ts`
+- ESLint uses flat config (`eslint.config.mjs`) with `defineConfig` from `eslint/config`
+- Turbopack is the default bundler
 
 **Why we chose it:**
 1. **ISR is perfect for a webcomic** — Pages are static (fast), but can revalidate when new comics publish
@@ -123,19 +129,25 @@ This document describes every technology used in the project and explains **why*
 
 | Library | Purpose | Why This? |
 |---------|---------|-----------|
-| **Tailwind CSS** | Styling | Utility-first, fast, mobile-first, no CSS file bloat |
+| **Tailwind CSS v4** | Styling | Utility-first, fast, mobile-first, no CSS file bloat |
 | **Sharp** | Image processing | Fast, well-maintained, used by Next.js internally |
-| **next-auth** (or simple auth) | Authentication | Simple, works with Next.js, supports credentials provider |
+| **Custom HMAC auth** | Authentication | Simple password auth with HMAC-signed session cookies |
 
 ---
 
-### Tailwind CSS
+### Tailwind CSS v4
 
 **What it provides:**
 - Utility-first CSS framework
 - Pre-defined classes for layout, typography, colors
 - Responsive design (`sm:`, `md:`, `lg:` breakpoints)
-- Purges unused CSS (small bundle)
+- Automatic unused CSS removal (small bundle)
+
+**Notable changes from Tailwind v3:**
+- CSS-first configuration via `@theme` blocks (no `tailwind.config.ts`)
+- `@import "tailwindcss"` replaces `@tailwind base/components/utilities`
+- Uses `@tailwindcss/postcss` instead of separate `postcss` + `autoprefixer` + `tailwindcss` plugins
+- Theme customization lives in CSS (`globals.css`) not JavaScript
 
 **Why we chose it:**
 1. **Mobile-first** — Responsive design is built-in
@@ -177,18 +189,23 @@ This document describes every technology used in the project and explains **why*
 
 ### Authentication
 
-**Options:**
-1. **NextAuth.js** — Full-featured auth library for Next.js
-2. **Simple password auth** — Just check email/password against env vars
+**Choice:** Custom HMAC-signed session tokens
 
-**Why we're keeping it simple:**
-- Only one user (Ren)
+**How it works:**
+- Email + password stored in environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`)
+- Login form POSTs to `/api/admin/auth`
+- API verifies credentials, creates HMAC-SHA256 signed token containing email + expiry
+- Token stored in HTTP-only, SameSite cookie (`session`)
+- `proxy.ts` verifies token signature on every `/admin/*` request
+
+**Why we built our own (not NextAuth):**
+- Only one user (Ren) — NextAuth is designed for multi-user apps
 - No OAuth needed (no "Sign in with Google")
 - No role-based access control
+- Zero dependencies — just Node's built-in `crypto` module
+- Full control over session format and expiry
 
-**Likely choice:** Simple password auth (email + password in env vars, session in cookie)
-
-**If we grow:** Switch to NextAuth later (easy migration)
+**If we grow:** Switch to NextAuth later (easy migration — just change the auth layer)
 
 ---
 
@@ -269,13 +286,13 @@ This document describes every technology used in the project and explains **why*
 
 | Decision | Choice | Why? |
 |----------|--------|------|
-| **Framework** | Next.js 15 | ISR perfect for webcomic, Vercel deployment |
+| **Framework** | Next.js 16 | ISR perfect for webcomic, Vercel deployment |
 | **Language** | TypeScript strict | Type safety, better DX |
 | **Database** | PostgreSQL | Reliable, free tiers, structured data |
 | **Image Storage** | Cloudflare R2 | Zero egress fees, S3-compatible |
 | **Styling** | Tailwind CSS | Fast, mobile-first, utility-first |
 | **Image Processing** | Sharp | Fast, well-maintained, WebP support |
-| **Auth** | Simple password | One user, no OAuth needed |
+| **Auth** | Custom HMAC sessions | One user, zero deps, full control |
 | **Package Manager** | npm | Standard, user knows it |
 | **Hosting** | Vercel | Zero-config Next.js, free tier |
 

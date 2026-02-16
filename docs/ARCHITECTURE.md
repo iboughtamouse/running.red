@@ -77,12 +77,12 @@ This is intentionally simple. One app, one deployment, one database.
 
 **Purpose:** Serves both public pages and admin interface.
 
-**Technology:** Next.js 15 with App Router
+**Technology:** Next.js 16 with App Router
 
 **Key Features:**
 
 - **Public routes** use React Server Components (no client JS unless needed)
-- **Admin routes** are protected with NextAuth (or simple password auth)
+- **Admin routes** are protected with HMAC-signed session cookies
 - **ISR (Incremental Static Regeneration)** for comic pages — static, but revalidates
 - **API routes** for image upload, database mutations, revalidation triggers
 
@@ -189,18 +189,18 @@ CREATE TABLE site_settings (
 ```
 running-red-bucket/
   originals/
-    page-1.png
-    page-2.png
+    page-1-1739654400000.png       # Timestamped (never overwritten)
+    page-1-1739740800000.png       # Re-upload creates new file
     ...
   images/
-    page-1-desktop.webp
+    page-1-desktop.webp            # Overwritten on re-upload
     page-1-mobile.webp
     page-2-desktop.webp
     page-2-mobile.webp
     ...
 ```
 
-**Access:** Public read via Cloudflare CDN (or signed URLs if private)
+**Access:** Images served via `/api/images/[...key]` proxy route (R2 bucket is not publicly accessible)
 
 **Why R2?**
 
@@ -226,8 +226,8 @@ running-red-bucket/
 
 **When Ren uploads a PNG:**
 
-1. **Admin form submits** image file to API route (`/api/admin/upload-image`)
-2. **Server receives file** (Node.js/Next.js API route)
+1. **Admin form submits** FormData (image + metadata) to `/api/admin/comics` (POST or PUT)
+2. **API route receives file** via FormData
 3. **Process with Sharp:**
    - Resize to desktop size (max 1200px width, preserve aspect ratio)
    - Convert to WebP at 85% quality
@@ -235,7 +235,7 @@ running-red-bucket/
    - Convert to WebP at 80% quality
    - Generate tiny blur placeholder (20px width, base64-encoded)
 4. **Upload to R2:**
-   - Original PNG → `originals/page-{N}.png`
+   - Original PNG → `originals/page-{N}-{timestamp}.png` (timestamped, never overwritten)
    - Desktop WebP → `images/page-{N}-desktop.webp`
    - Mobile WebP → `images/page-{N}-mobile.webp`
 5. **Save metadata to database:**
@@ -268,7 +268,7 @@ running-red-bucket/
      SELECT * FROM comic_pages
      WHERE slug = 'page-42'
        AND status = 'published'
-       AND publish_date <= CURRENT_DATE
+       AND publish_date <= NOW()
      ```
    - If found, renders page with image, commentary, navigation
    - If not found (404) or not published yet (404 or "coming soon")
@@ -288,7 +288,7 @@ running-red-bucket/
 
 ### Flow 2: Ren Uploads a New Comic Page
 
-1. Ren logs into `/admin` (authenticated with NextAuth or password)
+1. Ren logs into `/admin` (authenticated with HMAC-signed session cookie)
 2. Navigates to `/admin/comics/new`
 3. Fills out form:
    - Page number: 43
@@ -299,7 +299,7 @@ running-red-bucket/
    - Content warning: checks box, adds custom text
    - Status: "published"
 4. Clicks "Save"
-5. Form submits to `/api/admin/comic-pages` (POST)
+5. Form submits to `/api/admin/comics` (POST with FormData)
 6. API route:
    - Validates data
    - Processes image (Sharp → WebP variants)
@@ -332,31 +332,33 @@ running-red-bucket/
 
 **Goal:** Protect `/admin/*` routes so only Ren can access them.
 
-**Approach:** NextAuth.js with credentials provider (or simpler password auth)
+**Approach:** Custom HMAC-signed session tokens (no NextAuth — overkill for single user)
 
-**Simple Option (Recommended):**
+**How it works:**
 
 - Single user (Ren)
-- Email + password stored in environment variables
-- Login form at `/admin/login`
-- Session stored in HTTP-only cookie
-- Middleware protects `/admin/*` routes
+- Email + password stored in environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`)
+- Login form at `/admin/login` submits to `/api/admin/auth` (POST)
+- API route verifies credentials, creates HMAC-signed session token
+- Session stored in HTTP-only cookie (`session`)
+- `proxy.ts` protects `/admin/*` routes (redirects to login if no valid session)
 
 **Implementation:**
 
 ```typescript
-// middleware.ts
-export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/admin")) {
-    const session = getSession(request); // Check cookie
-    if (!session) {
-      return NextResponse.redirect("/admin/login");
+// proxy.ts (Next.js 16 convention — replaces middleware.ts)
+export function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/admin") &&
+      !request.nextUrl.pathname.startsWith("/admin/login")) {
+    const session = request.cookies.get("session");
+    if (!session || !verifySession(session.value)) {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
     }
   }
 }
 ```
 
-**Why not NextAuth with OAuth (Google, GitHub)?**
+**Why not NextAuth?**
 
 - Overkill for single user
 - More dependencies
@@ -382,7 +384,7 @@ export function middleware(request: NextRequest) {
 3. Environment variables set in Vercel dashboard:
    - `DATABASE_URL` (Postgres connection string)
    - `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT`
-   - `ADMIN_PASSWORD` (or NextAuth secret)
+   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET`
 
 **URLs:**
 
@@ -481,8 +483,8 @@ revalidatePath("/archive"); // Also update archive
 | Unauthorized admin access         | Password-protected `/admin` routes, HTTP-only session cookies            |
 | SQL injection                     | Use parameterized queries (Postgres client handles escaping)             |
 | XSS (cross-site scripting)        | Sanitize user input (commentary, titles), use React (auto-escapes)       |
-| CSRF (cross-site request forgery) | CSRF tokens on admin forms (NextAuth handles this)                       |
-| Image upload abuse                | Validate file type (PNG/JPEG only), max size limit (10MB), rate limiting |
+| CSRF (cross-site request forgery) | SameSite cookie attribute, origin checking on API routes                 |
+| Image upload abuse                | Validate file type (PNG/JPEG only), max size limit (50MB), rate limiting |
 | R2 bucket exposure                | Use signed URLs or restrict public access to `images/` only              |
 
 ---

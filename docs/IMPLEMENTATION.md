@@ -33,68 +33,68 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 1: Database & API Layer
+## Phase 1: Database & API Layer ✅
 
 > **Goal:** Working backend with database, API routes, and image processing. Testable via curl/Postman (no UI).
 
-### 1.1 Project Setup
+### 1.1 Project Setup ✅
 
-- [ ] Initialize Next.js 15 project with TypeScript strict mode
-- [ ] Configure basic directory structure (see [CONVENTIONS.md](CONVENTIONS.md))
-- [ ] Set up ESLint, Prettier configs (encode conventions in tooling)
-- [ ] Create `.env.example` and `.env.local` with required variables
-- [ ] Verify `npm run dev` works
+- [x] Initialize Next.js 16 project with TypeScript strict mode
+- [x] Configure basic directory structure (see [CONVENTIONS.md](CONVENTIONS.md))
+- [x] Set up ESLint, Prettier configs (encode conventions in tooling)
+- [x] Create `.env.example` and `.env.local` with required variables
+- [x] Verify `npm run dev` works
 
-### 1.2 Database Setup (Railway Postgres)
+### 1.2 Database Setup (Railway Postgres) ✅
 
-- [ ] Create Railway Postgres instance
-- [ ] Get connection string, add to `.env.local`
-- [ ] Create initial schema migration:
+- [x] Create Railway Postgres instance
+- [x] Get connection string, add to `.env.local`
+- [x] Create initial schema migration:
   - `comic_pages` table
   - `about_page` table
   - `links_page` table
   - `site_settings` table
-- [ ] Run migration, verify tables exist
-- [ ] Seed database with default data (site settings, about page, empty links)
-- [ ] Create `lib/db.ts` (Postgres client)
-- [ ] Create `lib/types.ts` (TypeScript types matching schema)
+- [x] Run migration, verify tables exist
+- [x] Seed database with default data (site settings, about page, empty links)
+- [x] Create `lib/db.ts` (Postgres client)
+- [x] Create `lib/types.ts` (TypeScript types matching schema)
 
-### 1.3 Cloudflare R2 Setup
+### 1.3 Cloudflare R2 Setup ✅
 
-- [ ] Create Cloudflare R2 bucket
-- [ ] Generate API credentials (access key, secret key)
-- [ ] Add R2 config to `.env.local`
-- [ ] Create `lib/r2.ts` (R2 upload/download utilities)
-- [ ] Test upload/download manually (via Node script or API route)
+- [x] Create Cloudflare R2 bucket
+- [x] Generate API credentials (access key, secret key)
+- [x] Add R2 config to `.env.local`
+- [x] Create `lib/r2.ts` (R2 upload/download utilities)
+- [x] Test upload/download manually (via Node script or API route)
 
-### 1.4 Image Processing
+### 1.4 Image Processing ✅
 
-- [ ] Install Sharp (`npm install sharp`)
-- [ ] Create `lib/image.ts`:
+- [x] Install Sharp (`npm install sharp`)
+- [x] Create `lib/image.ts`:
   - Function to resize/convert to WebP (desktop: 1200px, mobile: 800px)
   - Function to generate blur placeholder (base64)
-- [ ] Test locally (upload PNG, get WebP variants + blur hash)
+- [x] Test locally (upload PNG, get WebP variants + blur hash)
 
-### 1.5 API Routes
+### 1.5 API Routes ✅
 
-- [ ] Create `/api/admin/comics` route:
+- [x] Create `/api/admin/comics` route:
   - `GET` - List all comics (including drafts)
   - `POST` - Create new comic page (upload image, process, save to DB)
-- [ ] Create `/api/admin/comics/[id]` route:
+- [x] Create `/api/admin/comics/[id]` route:
   - `GET` - Fetch single comic page
   - `PUT` - Update comic page (with optional image replacement)
   - `DELETE` - Delete comic page
-- [ ] Create `/api/admin/about` route (GET/PUT for about page singleton)
-- [ ] Create `/api/admin/links` route (GET/PUT for links array)
-- [ ] Create `/api/admin/settings` route (GET/PUT for site settings)
-- [ ] Create `/api/comics` route (GET - public, published pages only)
+- [x] Create `/api/admin/about` route (GET/PUT for about page singleton)
+- [x] Create `/api/admin/links` route (GET/PUT for links array)
+- [x] Create `/api/admin/settings` route (GET/PUT for site settings)
+- [x] Create `/api/comics` route (GET - public, published pages only)
 
-### 1.6 Testing (No UI Yet)
+### 1.6 Testing (No UI Yet) ✅
 
-- [ ] Test all API routes with curl or Postman
-- [ ] Verify image upload → Sharp processing → R2 upload works
-- [ ] Verify database CRUD operations work
-- [ ] Verify published vs draft filtering works
+- [x] Test all API routes with curl or Postman
+- [x] Verify image upload → Sharp processing → R2 upload works
+- [x] Verify database CRUD operations work
+- [x] Verify published vs draft filtering works
 
 **Completion Criteria:**
 - ✅ Railway Postgres is set up and accessible
@@ -107,62 +107,60 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 2: Admin Interface
+## Phase 2: Admin Interface ✅
 
 > **Goal:** Ren can upload comic pages and edit content via admin UI. Test locally (no deployment yet).
 
-### 2.1 Authentication
+### 2.1 Authentication ✅
 
-- [ ] Create `lib/auth.ts` (simple password auth - email/password in env vars)
-- [ ] Create `/admin/login` page (login form)
-- [ ] Create `middleware.ts` (protect `/admin/*` routes, redirect to login if not authenticated)
-- [ ] Store session in HTTP-only cookie
-- [ ] Test: can't access `/admin` without logging in
+- [x] Create `lib/auth.ts` (HMAC-signed session tokens — email/password checked against env vars)
+- [x] Create `/admin/login` page (login form)
+- [x] Create `proxy.ts` (protect `/admin/*` routes, redirect to login if not authenticated)
+- [x] Store session in HTTP-only cookie
+- [x] Test: can't access `/admin` without logging in
 
-### 2.2 Admin Layout
+### 2.2 Admin Layout ✅
 
-- [ ] Create `/admin/layout.tsx`:
+- [x] Create `/admin/layout.tsx`:
   - Check authentication
   - Simple header with "Running Red Admin" + logout button
   - Navigation: Dashboard, Comics, About, Links, Settings
-- [ ] Create `/admin/page.tsx` (dashboard with stats and quick actions)
+- [x] Create `/admin/page.tsx` (dashboard with stats and quick actions)
 
-### 2.3 Comic Pages Management
+### 2.3 Comic Pages Management ✅
 
-- [ ] Create `/admin/comics/page.tsx`:
+- [x] Create `/admin/comics/page.tsx`:
   - Table listing all comics (page #, title, status, publish date, actions)
   - "Add New Page" button
-- [ ] Create `/admin/comics/new/page.tsx`:
+- [x] Create `/admin/comics/new/page.tsx`:
   - Form with all fields (see [PRODUCT.md](PRODUCT.md#add-comic-page-admincomicsnew))
-  - Image upload component
+  - Inline file input for image upload (FormData submission)
   - Content warnings checkboxes (multiselect)
   - On submit: POST to `/api/admin/comics`
   - Redirect to `/admin/comics` on success
-- [ ] Create `/admin/comics/[id]/page.tsx`:
-  - Same form, pre-filled with existing data
+- [x] Create `/admin/comics/[slug]/page.tsx`:
+  - Server component fetches comic by slug, passes to client form
   - "Replace Image" option
   - On submit: PUT to `/api/admin/comics/[id]`
 
-### 2.4 Static Content Management
+### 2.4 Static Content Management ✅
 
-- [ ] Create `/admin/about/page.tsx`:
+- [x] Create `/admin/about/page.tsx`:
+  - Server component fetches data, passes to `AboutForm` client component
   - Form with 4 markdown textareas (About Me, About Comic, Content Warnings, Update Schedule)
   - On submit: PUT to `/api/admin/about`
-- [ ] Create `/admin/links/page.tsx`:
+- [x] Create `/admin/links/page.tsx`:
+  - Server component fetches data, passes to `LinksForm` client component
   - Editable list of links (add/remove/reorder)
   - On submit: PUT to `/api/admin/links`
-- [ ] Create `/admin/settings/page.tsx`:
+- [x] Create `/admin/settings/page.tsx`:
+  - Server component fetches data, passes to `SettingsForm` client component
   - Form for site title, description, social image upload
   - On submit: PUT to `/api/admin/settings`
 
-### 2.5 Image Upload UI
+### 2.5 Image Upload UI — Skipped
 
-- [ ] Create `components/admin/ImageUpload.tsx`:
-  - File input (accepts PNG/JPEG)
-  - Image preview after selection
-  - Upload to `/api/admin/upload-image` route
-  - Show progress/success/error states
-  - Return R2 URLs + blur hash to parent form
+Image upload is handled inline within the comic create/edit forms (file input + FormData submission). A dedicated upload component with a separate API route, progress indicators, and pre-submission processing was deemed unnecessary for now — Ren uploads once a week. If the UX becomes a pain point, revisit this.
 
 ### 2.6 Testing (Still Local)
 
@@ -185,128 +183,65 @@ This document outlines the phased implementation plan for Running Red. The appro
 
 ---
 
-## Phase 3: Public Website
+## Phase 3: Public Website + Theming ✅
 
-> **Goal:** Readers can view comic pages and navigate. Test locally (Ren uploads via admin, readers see on public site).
+> **Goal:** Readers can view comic pages and navigate. Custom visual design from Ren. All public pages query the database directly via Server Components (no public API routes needed).
 
-### 3.1 Public API Routes
+### 3.1 Theme & Layout ✅
 
-- [ ] Create `/api/comics/latest` route (GET - returns latest published page)
-- [ ] Create `/api/comics/[slug]` route (GET - returns specific page + prev/next)
-- [ ] Create `/api/about` route (GET - returns about page content)
-- [ ] Create `/api/archive` route (GET - returns all published pages)
-- [ ] Create `/api/links` route (GET - returns links)
-- [ ] Create `/api/settings` route (GET - returns site settings)
+- [x] Set up Ren's color palette in `globals.css` via `@theme inline` (Tailwind v4)
+  - Base: #141E16, gradient: #2E351B → #4D1713, buttons: #100302/#BA9449/#891313
+- [x] Background image (`public/images/bg-flowers.png`) layered over gradient
+- [x] Create `(public)` route group with own layout (header + footer)
+- [x] `SiteHeader.tsx` — gold nav links (Home, About, Archive, Links)
+- [x] `SiteFooter.tsx` — copyright + RSS link
+- [x] Semi-transparent backdrop (`bg-base/60 backdrop-blur-sm`) on content areas
 
-### 3.2 Home Page (`/`)
+### 3.2 Comic Components ✅
 
-- [ ] Create `app/page.tsx`:
-  - Fetch latest published comic from `/api/comics/latest`
-  - Display comic image (responsive, desktop/mobile srcset)
-  - Display title (if set), publish date, commentary
-  - Navigation bar (First/Prev/Next/Last)
-  - If no pages exist: "Coming soon!"
+- [x] `ComicImage.tsx` — `<picture>` with desktop/mobile WebP, blur placeholder, cache-busting (`?v=updatedAt`)
+- [x] `ComicNav.tsx` — First/Prev/Next/Last buttons with keyboard arrow navigation
+- [x] `ContentWarning.tsx` — blur overlay with warning list + reveal button
+- [x] `ComicPageView.tsx` — shared layout composing image, nav, commentary, date
 
-### 3.3 Comic Page Component
+### 3.3 Comic Pages ✅
 
-- [ ] Create `components/public/ComicImage.tsx`:
-  - `<picture>` element with desktop/mobile WebP sources
-  - Blur placeholder while loading
-  - Alt text
-- [ ] Create `components/public/ComicNav.tsx`:
-  - First | Previous | Next | Last buttons
-  - Disable at boundaries
-  - Keyboard navigation (left/right arrow keys)
+- [x] Home page (`/`) — Server Component, queries DB for latest published page
+- [x] Comic route (`/comic/[slug]`) — ISR (1h), `generateStaticParams`, prev/next navigation
+- [x] Next-page image prefetching via `<link rel="prefetch">`
+- [x] Custom 404 for missing/unpublished comics
 
-### 3.4 Comic Page Route (`/comic/[slug]`)
+### 3.4 Supporting Pages ✅
 
-- [ ] Create `app/comic/[slug]/page.tsx`:
-  - Fetch comic page from `/api/comics/[slug]`
-  - Render ComicImage + ComicNav
-  - Display title, date, commentary
-  - If content warnings exist: wrap in ContentWarning component
-  - ISR: `revalidate` every hour (or on-demand)
-- [ ] Handle 404 (page not found or not published yet)
+- [x] About (`/about`) — 4 sections from `about_page` table
+- [x] Archive (`/archive`) — chronological list of published pages
+- [x] Links (`/links`) — external links from `links_page` table
 
-### 3.5 Content Warning System
+### 3.5 RSS & SEO ✅
 
-- [ ] Create `components/public/ContentWarning.tsx` (client component):
-  - Display blur overlay with warning list
-  - "View Page" button
-  - On click: remove blur, remove overlay
-  - Display warning pills below comic after viewing
-- [ ] Test with a page that has content warnings
-
-### 3.6 Static Pages
-
-- [ ] Create `app/about/page.tsx`:
-  - Fetch from `/api/about`
-  - Render markdown as HTML (choose markdown library: `react-markdown` or similar)
-- [ ] Create `app/archive/page.tsx`:
-  - Fetch from `/api/archive`
-  - Render chronological list with links to each page
-- [ ] Create `app/links/page.tsx`:
-  - Fetch from `/api/links`
-  - Render list of external links
-
-### 3.7 RSS Feed
-
-- [ ] Create `app/rss.xml/route.ts`:
-  - Fetch last 50 published pages
-  - Generate RSS 2.0 XML
-  - Include title, link, description, date, thumbnail
-
-### 3.8 Site Header
-
-- [ ] Create `components/public/SiteHeader.tsx`:
-  - Display site title (from settings)
-  - Navigation links: Home, About, Archive, Links
-  - Responsive (mobile menu or horizontal nav)
-- [ ] Add to root layout
-
-### 3.9 SEO & Metadata
-
-- [ ] Add metadata to all pages (title, description, OG tags, Twitter cards)
-- [ ] Use comic image as OG image for comic pages
-- [ ] Use social image from settings for static pages
-- [ ] Add canonical URLs
-
-### 3.10 Testing (End-to-End Locally)
-
-- [ ] Ren uploads a comic via admin
-- [ ] Reader sees it on home page and `/comic/page-X`
-- [ ] Navigation works (First/Prev/Next/Last, arrow keys)
-- [ ] Content warnings display correctly
-- [ ] About, Archive, Links pages work
-- [ ] RSS feed generates valid XML
+- [x] RSS feed (`/rss.xml`) — RSS 2.0, last 50 published pages
+- [x] Title template in root layout (`%s - Running Red`)
+- [x] RSS autodiscovery link
+- [x] Per-page `generateMetadata` on comic pages
 
 **Completion Criteria:**
-- ✅ Home page displays latest comic
-- ✅ Readers can navigate between comics
-- ✅ Content warning system works
-- ✅ All public pages functional
-- ✅ RSS feed works
-- ✅ Full workflow tested locally (admin → public)
+- ✅ Home page displays latest comic with Ren's custom theme
+- ✅ Readers can navigate between comics (buttons + keyboard)
+- ✅ Content warning system works (blur + reveal)
+- ✅ About, Archive, Links pages render from DB
+- ✅ RSS feed generates valid XML
+- ✅ Image cache-busting and prefetching in place
+- ✅ `npm run build`, `npm run lint`, typecheck all pass
 
-**Estimated Time:** 3-4 days
+**Status:** ✅ **Complete**
 
 ---
 
-## Phase 4: Styling & Polish
+## Phase 4: Polish & Accessibility
 
-> **Goal:** Production-ready visual design, responsive layout, accessibility, performance optimization.
+> **Goal:** Responsive layout, accessibility, performance optimization. (Visual theming was done in Phase 3.)
 
-### 4.1 Tailwind Design System
-
-- [ ] Finalize color scheme (get Ren's input)
-- [ ] Finalize typography (fonts, sizes, line heights)
-- [ ] Create reusable UI components (`components/ui/`):
-  - Button
-  - Input
-  - Card
-  - etc.
-
-### 4.2 Responsive Layout
+### 4.1 Responsive Layout
 
 - [ ] Test on mobile (phone, tablet)
 - [ ] Test on desktop (various screen sizes)
@@ -449,10 +384,10 @@ Deferred to post-launch:
 | Phase | Estimated Time | Status |
 |-------|---------------|--------|
 | Phase 0: Documentation | 1 day | ✅ Done |
-| Phase 1: Database & API | 2-3 days | 🔲 Not started |
-| Phase 2: Admin Interface | 3-4 days | 🔲 Not started |
-| Phase 3: Public Website | 3-4 days | 🔲 Not started |
-| Phase 4: Styling & Polish | 2-3 days | 🔲 Not started |
+| Phase 1: Database & API | 2-3 days | ✅ Done |
+| Phase 2: Admin Interface | 3-4 days | ✅ Done |
+| Phase 3: Public Website + Theming | 3-4 days | ✅ Done |
+| Phase 4: Polish & Accessibility | 2-3 days | 🔲 Not started |
 | Phase 5: Deployment | 1-2 days | 🔲 Not started |
 | **Total** | **12-17 days** | — |
 
