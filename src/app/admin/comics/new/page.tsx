@@ -3,17 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { CONTENT_WARNING_TYPES } from "@/lib/types";
-
-const WARNING_LABELS: Record<string, string> = {
-  abuse: "Abuse",
-  trauma: "Trauma",
-  "self-harm-suicide": "Self-harm / Suicide",
-  "eating-disorders": "Eating Disorders",
-  violence: "Violence",
-  "death-dying": "Death / Dying",
-  "mental-illness": "Mental Illness",
-};
+import { CONTENT_WARNING_TYPES, WARNING_LABELS } from "@/lib/types";
 
 export default function NewComicPage() {
   const router = useRouter();

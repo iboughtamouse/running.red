@@ -12,6 +12,16 @@ export const CONTENT_WARNING_TYPES = {
 export type ContentWarningType =
   (typeof CONTENT_WARNING_TYPES)[keyof typeof CONTENT_WARNING_TYPES];
 
+export const WARNING_LABELS: Record<ContentWarningType, string> = {
+  [CONTENT_WARNING_TYPES.ABUSE]: "Abuse",
+  [CONTENT_WARNING_TYPES.TRAUMA]: "Trauma",
+  [CONTENT_WARNING_TYPES.SELF_HARM_SUICIDE]: "Self-harm / Suicide",
+  [CONTENT_WARNING_TYPES.EATING_DISORDERS]: "Eating Disorders",
+  [CONTENT_WARNING_TYPES.VIOLENCE]: "Violence",
+  [CONTENT_WARNING_TYPES.DEATH_DYING]: "Death / Dying",
+  [CONTENT_WARNING_TYPES.MENTAL_ILLNESS]: "Mental Illness",
+};
+
 // Comic Page
 export interface ComicPage {
   id: number;

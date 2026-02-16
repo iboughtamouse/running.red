@@ -3,19 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { CONTENT_WARNING_TYPES } from "@/lib/types";
+import { CONTENT_WARNING_TYPES, WARNING_LABELS } from "@/lib/types";
 
 import type { ComicPage } from "@/lib/types";
-
-const WARNING_LABELS: Record<string, string> = {
-  abuse: "Abuse",
-  trauma: "Trauma",
-  "self-harm-suicide": "Self-harm / Suicide",
-  "eating-disorders": "Eating Disorders",
-  violence: "Violence",
-  "death-dying": "Death / Dying",
-  "mental-illness": "Mental Illness",
-};
 
 export function EditComicForm({ comic }: { comic: ComicPage }) {
   const router = useRouter();

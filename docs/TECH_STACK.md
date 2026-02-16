@@ -131,7 +131,7 @@ This document describes every technology used in the project and explains **why*
 |---------|---------|-----------|
 | **Tailwind CSS v4** | Styling | Utility-first, fast, mobile-first, no CSS file bloat |
 | **Sharp** | Image processing | Fast, well-maintained, used by Next.js internally |
-| **Custom HMAC auth** | Authentication | Simple password auth with HMAC-signed session cookies |
+| **Auth.js v5** | Authentication | Credentials provider with bcrypt, JWT sessions, proxy protection |
 
 ---
 
@@ -189,23 +189,20 @@ This document describes every technology used in the project and explains **why*
 
 ### Authentication
 
-**Choice:** Custom HMAC-signed session tokens
+**Choice:** Auth.js v5 (NextAuth) with Credentials provider
 
 **How it works:**
-- Email + password stored in environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`)
-- Login form POSTs to `/api/admin/auth`
-- API verifies credentials, creates HMAC-SHA256 signed token containing email + expiry
-- Token stored in HTTP-only, SameSite cookie (`session`)
-- `proxy.ts` verifies token signature on every `/admin/*` request
+- Admin credentials stored in `admin_users` DB table (bcrypt-hashed password)
+- Login form at `/admin/login` uses Auth.js `signIn("credentials", ...)`
+- Auth.js verifies password via bcrypt comparison
+- JWT session strategy (stateless, no server-side session store)
+- `proxy.ts` wraps Auth.js `auth()` to protect `/admin/*` and `/api/admin/*` routes
 
-**Why we built our own (not NextAuth):**
-- Only one user (Ren) — NextAuth is designed for multi-user apps
-- No OAuth needed (no "Sign in with Google")
-- No role-based access control
-- Zero dependencies — just Node's built-in `crypto` module
-- Full control over session format and expiry
-
-**If we grow:** Switch to NextAuth later (easy migration — just change the auth layer)
+**Why Auth.js:**
+- Proper bcrypt password hashing (not plaintext env vars)
+- Well-maintained session management with JWT
+- Protects both pages and API routes via proxy
+- Industry standard for Next.js authentication
 
 ---
 
@@ -292,7 +289,7 @@ This document describes every technology used in the project and explains **why*
 | **Image Storage** | Cloudflare R2 | Zero egress fees, S3-compatible |
 | **Styling** | Tailwind CSS | Fast, mobile-first, utility-first |
 | **Image Processing** | Sharp | Fast, well-maintained, WebP support |
-| **Auth** | Custom HMAC sessions | One user, zero deps, full control |
+| **Auth** | Auth.js v5 (Credentials) | bcrypt hashing, JWT sessions, proxy protection |
 | **Package Manager** | npm | Standard, user knows it |
 | **Hosting** | Vercel | Zero-config Next.js, free tier |
 

@@ -1,9 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
+import { mapComicRow } from "@/lib/mappers";
 import { deleteFile, uploadFile } from "@/lib/r2";
-
-import type { ComicPage, ContentWarningType } from "@/lib/types";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -22,7 +21,7 @@ export async function GET(_request: Request, { params }: RouteParams): Promise<R
     return Response.json({ error: "Comic page not found" }, { status: 404 });
   }
 
-  return Response.json(mapRow(result.rows[0]));
+  return Response.json(mapComicRow(result.rows[0]));
 }
 
 /**
@@ -81,6 +80,11 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
   let imageBlurHash = currentPage.image_blur_hash as string;
 
   if (image && image instanceof File && image.size > 0) {
+    // Validate image size (max 20MB)
+    if (image.size > 20 * 1024 * 1024) {
+      return Response.json({ error: "Image must be under 20MB" }, { status: 400 });
+    }
+
     const imageBuffer = Buffer.from(await image.arrayBuffer());
     const processed = await processImage(imageBuffer);
 
@@ -107,9 +111,16 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     imageMobileUrl = oldKeys.mobile;
   }
 
-  const contentWarnings: string[] = contentWarningsRaw
-    ? JSON.parse(contentWarningsRaw)
-    : (currentPage.content_warnings as string[]);
+  let contentWarnings: string[];
+  if (contentWarningsRaw) {
+    try {
+      contentWarnings = JSON.parse(contentWarningsRaw);
+    } catch {
+      return Response.json({ error: "contentWarnings must be valid JSON" }, { status: 400 });
+    }
+  } else {
+    contentWarnings = currentPage.content_warnings as string[];
+  }
 
   const result = await db.query(
     `UPDATE comic_pages SET
@@ -136,7 +147,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     ]
   );
 
-  const updatedPage = mapRow(result.rows[0]);
+  const updatedPage = mapComicRow(result.rows[0]);
 
   revalidatePath("/");
   revalidatePath("/archive");
@@ -181,23 +192,4 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
   revalidatePath(`/comic/page-${pageNumber}`);
 
   return Response.json({ success: true });
-}
-
-function mapRow(row: Record<string, unknown>): ComicPage {
-  return {
-    id: row.id as number,
-    pageNumber: row.page_number as number,
-    slug: row.slug as string,
-    title: row.title as string | null,
-    imageUrl: row.image_url as string,
-    imageMobileUrl: row.image_mobile_url as string | null,
-    imageBlurHash: row.image_blur_hash as string | null,
-    commentary: row.commentary as string | null,
-    contentWarnings: (row.content_warnings as ContentWarningType[]) || [],
-    contentWarningOther: row.content_warning_other as string | null,
-    publishDate: String(row.publish_date),
-    status: row.status as "draft" | "published",
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
 }

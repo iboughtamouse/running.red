@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { mapComicRow } from "@/lib/mappers";
 import { ComicPageView } from "@/components/public/ComicPageView";
-import type { ComicPage } from "@/lib/types";
 import type { Metadata } from "next";
 
 export const revalidate = 3600;
@@ -54,7 +54,7 @@ export default async function ComicSlugPage({ params }: PageProps) {
     notFound();
   }
 
-  const page = mapRow(result.rows[0]);
+  const page = mapComicRow(result.rows[0]);
 
   const [firstResult, prevResult, nextResult, lastResult] = await Promise.all([
     db.query(
@@ -107,23 +107,4 @@ export default async function ComicSlugPage({ params }: PageProps) {
       prefetchImages={prefetchImages}
     />
   );
-}
-
-function mapRow(row: Record<string, unknown>): ComicPage {
-  return {
-    id: row.id as number,
-    pageNumber: row.page_number as number,
-    slug: row.slug as string,
-    title: row.title as string | null,
-    imageUrl: row.image_url as string,
-    imageMobileUrl: row.image_mobile_url as string | null,
-    imageBlurHash: row.image_blur_hash as string | null,
-    commentary: row.commentary as string | null,
-    contentWarnings: (row.content_warnings as ComicPage["contentWarnings"]) || [],
-    contentWarningOther: row.content_warning_other as string | null,
-    publishDate: String(row.publish_date),
-    status: row.status as "draft" | "published",
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
 }

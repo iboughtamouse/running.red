@@ -1,20 +1,16 @@
+import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { mapSettingsRow } from "@/lib/mappers";
 import { SettingsForm } from "@/components/admin/settings-form";
-
-import type { SiteSettings } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   const result = await db.query("SELECT * FROM site_settings LIMIT 1");
 
-  const row = result.rows[0];
-  const data: SiteSettings = {
-    id: row.id as number,
-    siteTitle: (row.site_title as string) || "",
-    siteDescription: (row.site_description as string) || "",
-    socialImageUrl: (row.social_image_url as string | null) ?? null,
-  };
+  if (result.rows.length === 0) {
+    notFound();
+  }
 
-  return <SettingsForm initialData={data} />;
+  return <SettingsForm initialData={mapSettingsRow(result.rows[0])} />;
 }
