@@ -1,5 +1,6 @@
 "use client";
 
+import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,15 +17,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
       });
 
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.error || "Login failed");
+      if (result?.error) {
+        setError("Invalid email or password");
         return;
       }
 
