@@ -82,7 +82,7 @@ This is intentionally simple. One app, one deployment, one database.
 **Key Features:**
 
 - **Public routes** use React Server Components (no client JS unless needed)
-- **Admin routes** are protected with HMAC-signed session cookies
+- **Admin routes** are protected with Auth.js v5 (JWT sessions)
 - **ISR (Incremental Static Regeneration)** for comic pages — static, but revalidates
 - **API routes** for image upload, database mutations, revalidation triggers
 
@@ -288,7 +288,7 @@ running-red-bucket/
 
 ### Flow 2: Ren Uploads a New Comic Page
 
-1. Ren logs into `/admin` (authenticated with HMAC-signed session cookie)
+1. Ren logs into `/admin` (authenticated with Auth.js JWT session)
 2. Navigates to `/admin/comics/new`
 3. Fills out form:
    - Page number: 43
@@ -332,42 +332,22 @@ running-red-bucket/
 
 **Goal:** Protect `/admin/*` routes so only Ren can access them.
 
-**Approach:** Custom HMAC-signed session tokens (no NextAuth — overkill for single user)
+**Approach:** Auth.js v5 (NextAuth) with Credentials provider + bcrypt password hashing.
 
 **How it works:**
 
-- Single user (Ren)
-- Email + password stored in environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`)
-- Login form at `/admin/login` submits to `/api/admin/auth` (POST)
-- API route verifies credentials, creates HMAC-signed session token
-- Session stored in HTTP-only cookie (`session`)
-- `proxy.ts` protects `/admin/*` routes (redirects to login if no valid session)
+- Single admin user (Ren), credentials stored in `admin_users` DB table
+- Login form at `/admin/login` uses Auth.js `signIn("credentials", ...)`
+- Auth.js verifies credentials via bcrypt comparison against DB hash
+- JWT session strategy (no server-side session storage)
+- `proxy.ts` uses Auth.js `auth()` wrapper to protect `/admin/*` and `/api/admin/*` routes
 
-**Implementation:**
+**Key files:**
 
-```typescript
-// proxy.ts (Next.js 16 convention — replaces middleware.ts)
-export function proxy(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/admin") &&
-      !request.nextUrl.pathname.startsWith("/admin/login")) {
-    const session = request.cookies.get("session");
-    if (!session || !verifySession(session.value)) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
-    }
-  }
-}
-```
-
-**Why not NextAuth?**
-
-- Overkill for single user
-- More dependencies
-- Ren just needs a simple password
-
-**Why not role-based access control?**
-
-- Only one user (Ren)
-- No need for "editor" vs "admin" roles
+- `src/auth.ts` — Auth.js config with Credentials provider
+- `src/proxy.ts` — Route protection using Auth.js `auth()` wrapper
+- `src/app/api/auth/[...nextauth]/route.ts` — Auth.js API handler
+- `src/db/003-admin-users.sql` — Admin users table schema
 
 ---
 
@@ -383,8 +363,8 @@ export function proxy(request: NextRequest) {
 2. Vercel auto-deploys
 3. Environment variables set in Vercel dashboard:
    - `DATABASE_URL` (Postgres connection string)
-   - `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `R2_ENDPOINT`
-   - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `SESSION_SECRET`
+   - `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`
+   - `AUTH_SECRET` (Auth.js session signing key)
 
 **URLs:**
 
@@ -480,7 +460,7 @@ revalidatePath("/archive"); // Also update archive
 
 | Threat                            | Mitigation                                                               |
 | --------------------------------- | ------------------------------------------------------------------------ |
-| Unauthorized admin access         | Password-protected `/admin` routes, HTTP-only session cookies            |
+| Unauthorized admin access         | Auth.js v5 with JWT sessions, bcrypt password hashing, proxy protection  |
 | SQL injection                     | Use parameterized queries (Postgres client handles escaping)             |
 | XSS (cross-site scripting)        | Sanitize user input (commentary, titles), use React (auto-escapes)       |
 | CSRF (cross-site request forgery) | SameSite cookie attribute, origin checking on API routes                 |

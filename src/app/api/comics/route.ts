@@ -1,6 +1,5 @@
 import { db } from "@/lib/db";
-
-import type { ComicPage, ContentWarningType } from "@/lib/types";
+import { mapComicRow } from "@/lib/mappers";
 
 /**
  * GET /api/comics
@@ -16,26 +15,7 @@ export async function GET(): Promise<Response> {
      ORDER BY page_number ASC`
   );
 
-  const pages: ComicPage[] = result.rows.map(mapRow);
+  const pages = result.rows.map(mapComicRow);
 
   return Response.json(pages);
-}
-
-function mapRow(row: Record<string, unknown>): ComicPage {
-  return {
-    id: row.id as number,
-    pageNumber: row.page_number as number,
-    slug: row.slug as string,
-    title: row.title as string | null,
-    imageUrl: row.image_url as string,
-    imageMobileUrl: row.image_mobile_url as string | null,
-    imageBlurHash: row.image_blur_hash as string | null,
-    commentary: row.commentary as string | null,
-    contentWarnings: (row.content_warnings as ContentWarningType[]) || [],
-    contentWarningOther: row.content_warning_other as string | null,
-    publishDate: String(row.publish_date),
-    status: row.status as "draft" | "published",
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
 }

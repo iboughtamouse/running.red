@@ -10,6 +10,12 @@ export async function GET(
   { params }: { params: Promise<{ key: string[] }> }
 ): Promise<Response> {
   const { key } = await params;
+
+  // Reject path traversal attempts
+  if (key.some((segment) => segment === ".." || segment === ".")) {
+    return new Response("Bad request", { status: 400 });
+  }
+
   const r2Key = key.join("/");
 
   try {

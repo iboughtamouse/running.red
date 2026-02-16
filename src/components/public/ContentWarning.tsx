@@ -1,24 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { WARNING_LABELS } from "@/lib/types";
 import type { ContentWarningType } from "@/lib/types";
-import { CONTENT_WARNING_TYPES } from "@/lib/types";
 
 interface ContentWarningProps {
   warnings: ContentWarningType[];
   warningOther: string | null;
   children: React.ReactNode;
 }
-
-const WARNING_LABELS: Record<ContentWarningType, string> = {
-  [CONTENT_WARNING_TYPES.ABUSE]: "Abuse",
-  [CONTENT_WARNING_TYPES.TRAUMA]: "Trauma",
-  [CONTENT_WARNING_TYPES.SELF_HARM_SUICIDE]: "Self-Harm / Suicide",
-  [CONTENT_WARNING_TYPES.EATING_DISORDERS]: "Eating Disorders",
-  [CONTENT_WARNING_TYPES.VIOLENCE]: "Violence",
-  [CONTENT_WARNING_TYPES.DEATH_DYING]: "Death / Dying",
-  [CONTENT_WARNING_TYPES.MENTAL_ILLNESS]: "Mental Illness",
-};
 
 export function ContentWarning({ warnings, warningOther, children }: ContentWarningProps) {
   const [revealed, setRevealed] = useState(false);

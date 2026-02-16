@@ -1,7 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-
-import type { SiteSettings } from "@/lib/types";
+import { mapSettingsRow } from "@/lib/mappers";
 
 /**
  * GET /api/admin/settings
@@ -14,7 +13,7 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: "Site settings not found" }, { status: 404 });
   }
 
-  return Response.json(mapRow(result.rows[0]));
+  return Response.json(mapSettingsRow(result.rows[0]));
 }
 
 /**
@@ -50,14 +49,5 @@ export async function PUT(request: Request): Promise<Response> {
 
   revalidatePath("/", "layout");
 
-  return Response.json(mapRow(result.rows[0]));
-}
-
-function mapRow(row: Record<string, unknown>): SiteSettings {
-  return {
-    id: row.id as number,
-    siteTitle: row.site_title as string,
-    siteDescription: row.site_description as string,
-    socialImageUrl: row.social_image_url as string | null,
-  };
+  return Response.json(mapSettingsRow(result.rows[0]));
 }

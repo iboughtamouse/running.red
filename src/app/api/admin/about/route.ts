@@ -1,7 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
-
-import type { AboutPage } from "@/lib/types";
+import { mapAboutRow } from "@/lib/mappers";
 
 /**
  * GET /api/admin/about
@@ -14,7 +13,7 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: "About page not found" }, { status: 404 });
   }
 
-  return Response.json(mapRow(result.rows[0]));
+  return Response.json(mapAboutRow(result.rows[0]));
 }
 
 /**
@@ -52,15 +51,5 @@ export async function PUT(request: Request): Promise<Response> {
 
   revalidatePath("/about");
 
-  return Response.json(mapRow(result.rows[0]));
-}
-
-function mapRow(row: Record<string, unknown>): AboutPage {
-  return {
-    id: row.id as number,
-    aboutMe: row.about_me as string,
-    aboutComic: row.about_comic as string,
-    contentWarnings: row.content_warnings as string,
-    updateSchedule: row.update_schedule as string,
-  };
+  return Response.json(mapAboutRow(result.rows[0]));
 }

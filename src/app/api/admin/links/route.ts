@@ -1,7 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
+import { mapLinksRow } from "@/lib/mappers";
 
-import type { Link, LinksPage } from "@/lib/types";
+import type { Link } from "@/lib/types";
 
 /**
  * GET /api/admin/links
@@ -14,7 +15,7 @@ export async function GET(): Promise<Response> {
     return Response.json({ error: "Links page not found" }, { status: 404 });
   }
 
-  return Response.json(mapRow(result.rows[0]));
+  return Response.json(mapLinksRow(result.rows[0]));
 }
 
 /**
@@ -41,12 +42,5 @@ export async function PUT(request: Request): Promise<Response> {
 
   revalidatePath("/links");
 
-  return Response.json(mapRow(result.rows[0]));
-}
-
-function mapRow(row: Record<string, unknown>): LinksPage {
-  return {
-    id: row.id as number,
-    links: row.links as Link[],
-  };
+  return Response.json(mapLinksRow(result.rows[0]));
 }

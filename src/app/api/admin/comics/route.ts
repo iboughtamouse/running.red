@@ -1,9 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
+import { mapComicRow } from "@/lib/mappers";
 import { uploadFile } from "@/lib/r2";
-
-import type { ComicPage, ContentWarningType } from "@/lib/types";
 
 /**
  * GET /api/admin/comics
@@ -18,7 +17,7 @@ export async function GET(): Promise<Response> {
      ORDER BY page_number DESC`
   );
 
-  const pages: ComicPage[] = result.rows.map(mapRow);
+  const pages = result.rows.map(mapComicRow);
 
   return Response.json(pages);
 }
@@ -54,6 +53,11 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "status must be 'draft' or 'published'" }, { status: 400 });
   }
 
+  // Validate image size (max 20MB)
+  if (image.size > 20 * 1024 * 1024) {
+    return Response.json({ error: "Image must be under 20MB" }, { status: 400 });
+  }
+
   // Check for duplicate page number
   const existing = await db.query("SELECT id FROM comic_pages WHERE page_number = $1", [
     pageNumber,
@@ -63,7 +67,14 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   // Parse content warnings (sent as JSON array string)
-  const contentWarnings: string[] = contentWarningsRaw ? JSON.parse(contentWarningsRaw) : [];
+  let contentWarnings: string[] = [];
+  if (contentWarningsRaw) {
+    try {
+      contentWarnings = JSON.parse(contentWarningsRaw);
+    } catch {
+      return Response.json({ error: "contentWarnings must be valid JSON" }, { status: 400 });
+    }
+  }
 
   // Generate slug from page number
   const slug = `page-${pageNumber}`;
@@ -109,25 +120,5 @@ export async function POST(request: Request): Promise<Response> {
   revalidatePath("/rss.xml");
   revalidatePath(`/comic/${slug}`);
 
-  return Response.json(mapRow(result.rows[0]), { status: 201 });
-}
-
-// Map snake_case DB row to camelCase ComicPage
-function mapRow(row: Record<string, unknown>): ComicPage {
-  return {
-    id: row.id as number,
-    pageNumber: row.page_number as number,
-    slug: row.slug as string,
-    title: row.title as string | null,
-    imageUrl: row.image_url as string,
-    imageMobileUrl: row.image_mobile_url as string | null,
-    imageBlurHash: row.image_blur_hash as string | null,
-    commentary: row.commentary as string | null,
-    contentWarnings: (row.content_warnings as ContentWarningType[]) || [],
-    contentWarningOther: row.content_warning_other as string | null,
-    publishDate: String(row.publish_date),
-    status: row.status as "draft" | "published",
-    createdAt: String(row.created_at),
-    updatedAt: String(row.updated_at),
-  };
+  return Response.json(mapComicRow(result.rows[0]), { status: 201 });
 }
