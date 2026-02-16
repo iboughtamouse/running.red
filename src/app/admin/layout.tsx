@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   { href: "/admin", label: "Dashboard" },
@@ -13,16 +14,10 @@ const navItems = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   // Don't show nav on login page
   if (pathname === "/admin/login") {
     return <>{children}</>;
-  }
-
-  async function handleLogout() {
-    await fetch("/api/admin/auth", { method: "DELETE" });
-    router.push("/admin/login");
   }
 
   return (
@@ -30,7 +25,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <header className="border-b border-gray-300 bg-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <h1 className="text-lg font-bold text-gray-900">Running Red Admin</h1>
-          <button onClick={handleLogout} className="text-sm text-gray-500 hover:text-gray-900">
+          <button
+            onClick={() => signOut({ callbackUrl: "/admin/login" })}
+            className="text-sm text-gray-500 hover:text-gray-900"
+          >
             Log out
           </button>
         </div>
