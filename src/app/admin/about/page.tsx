@@ -3,6 +3,8 @@ import { AboutForm } from "@/components/admin/about-form";
 
 import type { AboutPage } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminAboutPage() {
   const result = await db.query("SELECT * FROM about_page LIMIT 1");
 

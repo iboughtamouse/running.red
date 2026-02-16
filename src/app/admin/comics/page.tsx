@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 
 import type { ComicPage, ContentWarningType } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminComicsPage() {
   const result = await db.query(
     `SELECT * FROM comic_pages ORDER BY page_number DESC`
