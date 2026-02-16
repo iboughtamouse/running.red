@@ -99,12 +99,28 @@ running-red/
   public/                       # Static assets
     favicon.ico
     robots.txt
+    images/
+      bg-flowers.png            # Background image (Ren's design)
   src/                          # Source code
     proxy.ts                    # Auth proxy (protects /admin/* routes)
     app/                        # Next.js App Router
-      layout.tsx                # Root layout
-      page.tsx                  # Home page (will move to (public)/ in Phase 3)
-      globals.css               # Global styles + Tailwind
+      layout.tsx                # Root layout (minimal: html, body, fonts, globals)
+      globals.css               # Ren's color palette + background via @theme inline
+      (public)/                 # Public route group (reader-facing)
+        layout.tsx              # Public layout (SiteHeader + SiteFooter)
+        page.tsx                # Home page (latest published comic)
+        comic/
+          [slug]/
+            page.tsx            # Individual comic page (ISR, generateStaticParams)
+            not-found.tsx       # 404 for missing/unpublished comics
+        about/
+          page.tsx              # About page (from about_page table)
+        archive/
+          page.tsx              # Archive list (all published pages)
+        links/
+          page.tsx              # External links (from links_page table)
+        rss.xml/
+          route.ts              # RSS 2.0 feed (last 50 pages)
       admin/                    # Admin routes (protected by proxy.ts)
         layout.tsx              # Admin layout (nav, header, logout)
         page.tsx                # Admin dashboard
@@ -141,18 +157,25 @@ running-red/
           route.ts              # GET public comics (published only)
         images/
           [...key]/
-            route.ts            # R2 image proxy (streams images to browser)
+            route.ts            # R2 image proxy (immutable caching)
     components/                 # React components
       admin/                    # Admin-specific client components
         about-form.tsx          # About page form
         edit-comic-form.tsx     # Comic edit form
         links-form.tsx          # Links page form
         settings-form.tsx       # Settings page form
-      public/                   # Public-facing components (Phase 3)
+      public/                   # Public-facing components
+        ComicImage.tsx           # Responsive <picture> with cache-busting
+        ComicNav.tsx             # First/Prev/Next/Last + keyboard arrows
+        ComicPageView.tsx        # Shared comic page layout + prefetch
+        ContentWarning.tsx       # Blur overlay + reveal toggle
+        SiteHeader.tsx           # Gold nav bar
+        SiteFooter.tsx           # Copyright + RSS link
       ui/                       # Generic UI components (Phase 4)
     db/                         # Database files
-      schema.sql                # Full schema migration
+      schema.sql                # Full schema (fresh install)
       seed.sql                  # Default data seed
+      002-publish-timestamp.sql # Migration: DATE → TIMESTAMPTZ
     lib/                        # Utilities, helpers, clients
       auth.ts                   # HMAC session auth utilities
       db.ts                     # PostgreSQL client (pg Pool)
