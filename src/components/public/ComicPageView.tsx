@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import { ComicImage } from "./ComicImage";
 import { ComicNav } from "./ComicNav";
 import { ContentWarning } from "./ContentWarning";
@@ -19,6 +20,14 @@ interface ComicPageViewProps {
 }
 
 export function ComicPageView({ page, firstSlug, prevSlug, nextSlug, lastSlug, prefetchImages }: ComicPageViewProps) {
+  if (prefetchImages) {
+    const cacheBust = `?v=${encodeURIComponent(prefetchImages.updatedAt)}`;
+    preload(`/api/images/${prefetchImages.imageUrl}${cacheBust}`, { as: "image" });
+    if (prefetchImages.imageMobileUrl) {
+      preload(`/api/images/${prefetchImages.imageMobileUrl}${cacheBust}`, { as: "image" });
+    }
+  }
+
   const hasWarnings = page.contentWarnings.length > 0 || !!page.contentWarningOther;
 
   const image = <ComicImage page={page} />;
@@ -68,22 +77,6 @@ export function ComicPageView({ page, firstSlug, prevSlug, nextSlug, lastSlug, p
         })}
       </time>
 
-      {prefetchImages && (
-        <>
-          <link
-            rel="prefetch"
-            href={`/api/images/${prefetchImages.imageUrl}?v=${encodeURIComponent(prefetchImages.updatedAt)}`}
-            as="image"
-          />
-          {prefetchImages.imageMobileUrl && (
-            <link
-              rel="prefetch"
-              href={`/api/images/${prefetchImages.imageMobileUrl}?v=${encodeURIComponent(prefetchImages.updatedAt)}`}
-              as="image"
-            />
-          )}
-        </>
-      )}
     </article>
   );
 }
