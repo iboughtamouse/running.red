@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 
 import type { Link, LinksPage } from "@/lib/types";
@@ -37,6 +38,8 @@ export async function PUT(request: Request): Promise<Response> {
     "UPDATE links_page SET links = $1::jsonb WHERE id = $2 RETURNING *",
     [JSON.stringify(links), existing.rows[0].id]
   );
+
+  revalidatePath("/links");
 
   return Response.json(mapRow(result.rows[0]));
 }

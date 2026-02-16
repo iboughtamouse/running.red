@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 
 import type { SiteSettings } from "@/lib/types";
@@ -46,6 +47,8 @@ export async function PUT(request: Request): Promise<Response> {
       current.id,
     ]
   );
+
+  revalidatePath("/", "layout");
 
   return Response.json(mapRow(result.rows[0]));
 }

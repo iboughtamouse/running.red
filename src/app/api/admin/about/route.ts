@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 
 import type { AboutPage } from "@/lib/types";
@@ -48,6 +49,8 @@ export async function PUT(request: Request): Promise<Response> {
       current.id,
     ]
   );
+
+  revalidatePath("/about");
 
   return Response.json(mapRow(result.rows[0]));
 }
