@@ -101,7 +101,8 @@ Running Red is a webcomic reader and content management system for a single-auth
 - If page has a content warning: blurred with confirmation overlay
 
 **Behavior:**
-- Fetches the most recent published page (highest page_number where status=published and publish_date <= today)
+- Fetches the most recent published page (highest page_number where status=published and publish_date <= now)
+- Comics publish at **12:00 UTC** (4am PST / 7am EST) on the selected date
 - If no pages exist yet, shows placeholder: "Coming soon!"
 
 **URL:** `/`

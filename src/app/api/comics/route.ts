@@ -12,7 +12,7 @@ export async function GET(): Promise<Response> {
             image_blur_hash, commentary, content_warnings, content_warning_other,
             publish_date, status, created_at, updated_at
      FROM comic_pages
-     WHERE status = 'published' AND publish_date <= CURRENT_DATE
+     WHERE status = 'published' AND publish_date <= NOW()
      ORDER BY page_number ASC`
   );
 

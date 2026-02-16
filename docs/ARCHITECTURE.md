@@ -268,7 +268,7 @@ running-red-bucket/
      SELECT * FROM comic_pages
      WHERE slug = 'page-42'
        AND status = 'published'
-       AND publish_date <= CURRENT_DATE
+       AND publish_date <= NOW()
      ```
    - If found, renders page with image, commentary, navigation
    - If not found (404) or not published yet (404 or "coming soon")

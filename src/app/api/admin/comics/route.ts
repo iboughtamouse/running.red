@@ -98,7 +98,7 @@ export async function POST(request: Request): Promise<Response> {
       commentary || null,
       contentWarnings,
       contentWarningOther || null,
-      publishDate,
+      `${publishDate}T12:00:00Z`,
       status,
     ]
   );

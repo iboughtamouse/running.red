@@ -52,7 +52,7 @@ CREATE TABLE comic_pages (
   content_warning_other TEXT,               -- Free text for "Other"
 
   -- Publishing
-  publish_date DATE NOT NULL,
+  publish_date TIMESTAMPTZ NOT NULL,  -- Always 12:00 UTC on the chosen date
   status VARCHAR(20) DEFAULT 'draft',        -- 'draft' or 'published'
 
   -- Metadata
@@ -80,7 +80,7 @@ CREATE INDEX idx_comic_pages_page_number ON comic_pages(page_number);
 | `commentary` | Text | No | Author's notes displayed below the comic page. Markdown or plain text. Can be null. |
 | `content_warnings` | Text[] | No | Array of content warning types. Valid values: `'abuse'`, `'trauma'`, `'self-harm-suicide'`, `'eating-disorders'`, `'violence'`, `'death-dying'`, `'mental-illness'`. Empty array = no warnings. |
 | `content_warning_other` | Text | No | Free text for content warnings not covered by predefined list. Only shown if not null. |
-| `publish_date` | Date | Yes | The date when this page becomes visible to readers. Pages with future dates are hidden. |
+| `publish_date` | Timestamptz | Yes | When this page becomes visible to readers. Always stored as 12:00 UTC on the chosen date. Pages with future timestamps are hidden. |
 | `status` | Varchar(20) | Yes | Either "draft" or "published". Drafts are only visible in admin. Defaults to "draft". |
 | `created_at` | Timestamp | Yes | When the row was created. Auto-set. |
 | `updated_at` | Timestamp | Yes | When the row was last updated. Auto-set (needs trigger or app-level update). |
@@ -101,7 +101,7 @@ INSERT INTO comic_pages (
   'This took forever to draw! Hope you like it.',
   ARRAY['violence', 'death-dying'],
   NULL,
-  '2026-02-17',
+  '2026-02-17T12:00:00Z',
   'published'
 );
 ```
@@ -112,7 +112,7 @@ Get all published pages:
 ```sql
 SELECT * FROM comic_pages
 WHERE status = 'published'
-  AND publish_date <= CURRENT_DATE
+  AND publish_date <= NOW()
 ORDER BY page_number ASC;
 ```
 
@@ -120,7 +120,7 @@ Get latest published page:
 ```sql
 SELECT * FROM comic_pages
 WHERE status = 'published'
-  AND publish_date <= CURRENT_DATE
+  AND publish_date <= NOW()
 ORDER BY page_number DESC
 LIMIT 1;
 ```
@@ -130,7 +130,7 @@ Get a specific page by slug:
 SELECT * FROM comic_pages
 WHERE slug = 'page-42'
   AND status = 'published'
-  AND publish_date <= CURRENT_DATE;
+  AND publish_date <= NOW();
 ```
 
 Get previous/next pages:
@@ -139,7 +139,7 @@ Get previous/next pages:
 SELECT * FROM comic_pages
 WHERE page_number < 42
   AND status = 'published'
-  AND publish_date <= CURRENT_DATE
+  AND publish_date <= NOW()
 ORDER BY page_number DESC
 LIMIT 1;
 
@@ -147,7 +147,7 @@ LIMIT 1;
 SELECT * FROM comic_pages
 WHERE page_number > 42
   AND status = 'published'
-  AND publish_date <= CURRENT_DATE
+  AND publish_date <= NOW()
 ORDER BY page_number ASC
 LIMIT 1;
 ```
@@ -553,6 +553,7 @@ Database schema changes are managed with raw SQL migration files in `src/db/`.
 **Current files:**
 - `src/db/schema.sql` — Full schema (all tables, indexes, constraints)
 - `src/db/seed.sql` — Default data for singleton tables
+- `src/db/002-publish-timestamp.sql` — Change `publish_date` from DATE to TIMESTAMPTZ (12:00 UTC)
 
 **Future migrations:**
 - Add/remove columns

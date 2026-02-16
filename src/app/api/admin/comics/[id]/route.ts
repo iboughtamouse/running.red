@@ -129,7 +129,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
       contentWarningOther !== undefined
         ? contentWarningOther || null
         : currentPage.content_warning_other,
-      publishDate || currentPage.publish_date,
+      publishDate ? `${publishDate}T12:00:00Z` : currentPage.publish_date,
       status || currentPage.status,
       id,
     ]

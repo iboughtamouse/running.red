@@ -13,7 +13,7 @@ CREATE TABLE comic_pages (
   commentary TEXT,
   content_warnings TEXT[] DEFAULT '{}',
   content_warning_other TEXT,
-  publish_date DATE NOT NULL,
+  publish_date TIMESTAMPTZ NOT NULL,  -- Always stored as 12:00 UTC on the chosen date
   status VARCHAR(20) DEFAULT 'draft',
   created_at TIMESTAMP DEFAULT NOW(),
   updated_at TIMESTAMP DEFAULT NOW()
