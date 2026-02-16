@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
 import { uploadFile } from "@/lib/r2";
@@ -102,6 +103,11 @@ export async function POST(request: Request): Promise<Response> {
       status,
     ]
   );
+
+  revalidatePath("/");
+  revalidatePath("/archive");
+  revalidatePath("/rss.xml");
+  revalidatePath(`/comic/${slug}`);
 
   return Response.json(mapRow(result.rows[0]), { status: 201 });
 }

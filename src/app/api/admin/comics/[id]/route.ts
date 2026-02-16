@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
 import { deleteFile, uploadFile } from "@/lib/r2";
@@ -135,7 +136,18 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     ]
   );
 
-  return Response.json(mapRow(result.rows[0]));
+  const updatedPage = mapRow(result.rows[0]);
+
+  revalidatePath("/");
+  revalidatePath("/archive");
+  revalidatePath("/rss.xml");
+  revalidatePath(`/comic/${updatedPage.slug}`);
+  // If slug changed (page number changed), also revalidate the old slug
+  if (updatedPage.slug !== `page-${currentPage.page_number}`) {
+    revalidatePath(`/comic/page-${currentPage.page_number}`);
+  }
+
+  return Response.json(updatedPage);
 }
 
 /**
@@ -162,6 +174,11 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
 
   // Delete from database
   await db.query("DELETE FROM comic_pages WHERE id = $1", [id]);
+
+  revalidatePath("/");
+  revalidatePath("/archive");
+  revalidatePath("/rss.xml");
+  revalidatePath(`/comic/page-${pageNumber}`);
 
   return Response.json({ success: true });
 }
