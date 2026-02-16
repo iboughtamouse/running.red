@@ -3,6 +3,8 @@ import { SettingsForm } from "@/components/admin/settings-form";
 
 import type { SiteSettings } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminSettingsPage() {
   const result = await db.query("SELECT * FROM site_settings LIMIT 1");
 

@@ -3,6 +3,8 @@ import { LinksForm } from "@/components/admin/links-form";
 
 import type { Link } from "@/lib/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLinksPage() {
   const result = await db.query("SELECT * FROM links_page LIMIT 1");
 
