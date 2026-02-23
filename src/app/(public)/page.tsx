@@ -2,7 +2,10 @@ import { db } from "@/lib/db";
 import { mapComicRow } from "@/lib/mappers";
 import { ComicPageView } from "@/components/public/ComicPageView";
 
-export const revalidate = 3600;
+// Short revalidation so scheduled pages appear on the homepage promptly.
+// The homepage shows the latest published page, so it needs to pick up
+// newly-live publish_dates within a minute rather than waiting an hour.
+export const revalidate = 60;
 
 export default async function HomePage() {
   const latestResult = await db.query(
