@@ -158,6 +158,20 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
     revalidatePath(`/comic/page-${currentPage.page_number}`);
   }
 
+  // Revalidate adjacent pages so their prev/next navigation updates
+  const [adjPrev, adjNext] = await Promise.all([
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number < $1 ORDER BY page_number DESC LIMIT 1`,
+      [pageNumber]
+    ),
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number > $1 ORDER BY page_number ASC LIMIT 1`,
+      [pageNumber]
+    ),
+  ]);
+  if (adjPrev.rows[0]?.slug) revalidatePath(`/comic/${adjPrev.rows[0].slug}`);
+  if (adjNext.rows[0]?.slug) revalidatePath(`/comic/${adjNext.rows[0].slug}`);
+
   return Response.json(updatedPage);
 }
 
@@ -190,6 +204,20 @@ export async function DELETE(_request: Request, { params }: RouteParams): Promis
   revalidatePath("/archive");
   revalidatePath("/rss.xml");
   revalidatePath(`/comic/page-${pageNumber}`);
+
+  // Revalidate adjacent pages so their prev/next navigation updates
+  const [adjPrev, adjNext] = await Promise.all([
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number < $1 ORDER BY page_number DESC LIMIT 1`,
+      [pageNumber]
+    ),
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number > $1 ORDER BY page_number ASC LIMIT 1`,
+      [pageNumber]
+    ),
+  ]);
+  if (adjPrev.rows[0]?.slug) revalidatePath(`/comic/${adjPrev.rows[0].slug}`);
+  if (adjNext.rows[0]?.slug) revalidatePath(`/comic/${adjNext.rows[0].slug}`);
 
   return Response.json({ success: true });
 }

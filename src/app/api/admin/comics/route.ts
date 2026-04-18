@@ -120,5 +120,19 @@ export async function POST(request: Request): Promise<Response> {
   revalidatePath("/rss.xml");
   revalidatePath(`/comic/${slug}`);
 
+  // Revalidate adjacent pages so their prev/next navigation updates
+  const [adjPrev, adjNext] = await Promise.all([
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number < $1 ORDER BY page_number DESC LIMIT 1`,
+      [pageNumber]
+    ),
+    db.query(
+      `SELECT slug FROM comic_pages WHERE page_number > $1 ORDER BY page_number ASC LIMIT 1`,
+      [pageNumber]
+    ),
+  ]);
+  if (adjPrev.rows[0]?.slug) revalidatePath(`/comic/${adjPrev.rows[0].slug}`);
+  if (adjNext.rows[0]?.slug) revalidatePath(`/comic/${adjNext.rows[0].slug}`);
+
   return Response.json(mapComicRow(result.rows[0]), { status: 201 });
 }
