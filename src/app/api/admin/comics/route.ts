@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
-import { mapComicRow } from "@/lib/mappers";
+import { mapComicRow, toPublishTimestamp } from "@/lib/mappers";
 import { uploadFile } from "@/lib/r2";
 
 /**
@@ -110,7 +110,7 @@ export async function POST(request: Request): Promise<Response> {
       commentary || null,
       contentWarnings,
       contentWarningOther || null,
-      `${publishDate}T12:00:00Z`,
+      toPublishTimestamp(publishDate),
       status,
     ]
   );

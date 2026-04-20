@@ -1,7 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { originalKey, processImage, servingKeys } from "@/lib/image";
-import { mapComicRow } from "@/lib/mappers";
+import { mapComicRow, toPublishTimestamp } from "@/lib/mappers";
 import { deleteFile, uploadFile } from "@/lib/r2";
 
 interface RouteParams {
@@ -141,7 +141,7 @@ export async function PUT(request: Request, { params }: RouteParams): Promise<Re
       contentWarningOther !== undefined
         ? contentWarningOther || null
         : currentPage.content_warning_other,
-      publishDate ? `${publishDate}T12:00:00Z` : currentPage.publish_date,
+      publishDate ? toPublishTimestamp(publishDate) : currentPage.publish_date,
       status || currentPage.status,
       id,
     ]
