@@ -15,7 +15,7 @@
 body {
   background-color: var(--color-base);
   background-image:
-    url('/images/bg-flowers.png'),
+    url('/images/bg-flowers.webp'),
     linear-gradient(to bottom, var(--color-base-light), var(--color-base) 50%, var(--color-base-red));
   background-attachment: scroll;
   background-position: bottom center, center center;
