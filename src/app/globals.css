@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-base: #141E16;
-  --color-base-light: #2E351B;
-  --color-base-red: #4D1713;
+  --color-base: #141e16;
+  --color-base-light: #2e351b;
+  --color-base-red: #4d1713;
   --color-btn-dark: #100302;
-  --color-btn-gold: #BA9449;
+  --color-btn-gold: #ba9449;
   --color-btn-red: #891313;
   --color-foreground: #ededed;
   --font-sans: var(--font-geist-sans);
@@ -15,10 +15,17 @@
 body {
   background-color: var(--color-base);
   background-image:
-    url('/images/bg-flowers.webp'),
-    linear-gradient(to bottom, var(--color-base-light), var(--color-base) 50%, var(--color-base-red));
+    url("/images/bg-flowers.png"),
+    linear-gradient(
+      to bottom,
+      var(--color-base-light),
+      var(--color-base) 50%,
+      var(--color-base-red)
+    );
   background-attachment: scroll;
-  background-position: bottom center, center center;
+  background-position:
+    bottom center,
+    center center;
   background-repeat: no-repeat;
   background-size: cover;
   color: var(--color-foreground);
